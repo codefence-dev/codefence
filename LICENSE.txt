@@ -1,0 +1,194 @@
+CODEFENCE
+END USER LICENSE AGREEMENT (EULA)
+Version 1.0.0
+
+Copyright (c) 2026 CodeFence. All rights reserved.
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE USING THIS SOFTWARE.
+BY USING THIS SOFTWARE, YOU AGREE TO BE BOUND BY ITS TERMS.
+
+--------------------------------------------------------------------
+1. DEFINITIONS
+--------------------------------------------------------------------
+
+"Software" means the CodeFence command-line tool, its source
+code, documentation, rules file (rules.json), sample files, and any
+accompanying materials delivered together.
+
+"Licensor" means the copyright holder of the Software.
+
+"You" or "Licensee" means the individual person who purchased or
+acquired the Software.
+
+"Personal Use" means use of the Software by a single individual, on
+computers that the individual owns or controls, for that individual's
+own development work. Personal Use does not include use on behalf of
+a commercial entity as a service to third parties.
+
+--------------------------------------------------------------------
+2. GRANT OF LICENSE
+--------------------------------------------------------------------
+
+Subject to your compliance with this Agreement, the Licensor grants
+You a non-exclusive, non-transferable, worldwide, perpetual license
+to:
+
+  (a) install and use the Software on up to three (3) devices that
+      You personally own or control;
+  (b) read, study, and audit the source code for Your own personal
+      understanding of its behavior;
+  (c) create private modifications of the source code for Your own
+      personal use, provided such modifications remain strictly
+      private and are not distributed.
+
+This is a license, not a sale. The Licensor retains all right, title,
+and interest in and to the Software.
+
+--------------------------------------------------------------------
+3. RESTRICTIONS
+--------------------------------------------------------------------
+
+You may NOT:
+
+  (a) redistribute, sublicense, sell, resell, rent, lease, lend, or
+      otherwise transfer the Software or any modification of it;
+  (b) publish, share, or make available the source code, in original
+      or modified form, on any public or private repository, forum,
+      chat, file-sharing service, or bundle;
+  (c) include the Software in any commercial product, bundle, or
+      service offering;
+  (d) remove, alter, or obscure any copyright, license, or
+      attribution notice in the Software;
+  (e) use the Software for any unlawful purpose;
+  (f) use the Software to provide scanning-as-a-service to third
+      parties on a commercial basis.
+
+--------------------------------------------------------------------
+4. SOURCE CODE AVAILABILITY
+--------------------------------------------------------------------
+
+The Software is delivered in human-readable source form. This is done
+intentionally so that any user can inspect exactly what the tool does,
+confirm that it performs no network calls, and verify that it does not
+touch files outside the scope documented in SECURITY.md.
+
+Availability of the source code under this Agreement does NOT make
+the Software open source. Open-source licenses grant redistribution
+rights; this Agreement does not.
+
+--------------------------------------------------------------------
+5. NO SUPPORT, NO UPDATES
+--------------------------------------------------------------------
+
+The Software is provided as-is at the time of purchase. The Licensor
+has no obligation to:
+
+  (a) provide technical support, bug fixes, or updates;
+  (b) maintain compatibility with future Python versions, operating
+      systems, or third-party libraries;
+  (c) respond to any communication regarding the Software.
+
+Any future updates, if ever released, are provided at the Licensor's
+sole discretion and do not extend the obligations of this Agreement.
+
+--------------------------------------------------------------------
+6. CONSUMER RIGHTS (EU/UK)
+--------------------------------------------------------------------
+
+If You are a consumer resident in the European Union or the United
+Kingdom, nothing in this Agreement limits or excludes any statutory
+right or remedy You have under applicable mandatory consumer law.
+
+In particular:
+
+  (a) RIGHT OF WITHDRAWAL (EU): You have the right to withdraw from
+      the purchase within fourteen (14) days of delivery, without
+      giving any reason, provided that You have not downloaded the
+      Software file. Once digital content has been downloaded, the
+      withdrawal right is typically waived under the EU Consumer
+      Rights Directive (2011/83/EU), Article 16(m), unless the
+      vendor has obtained Your prior express consent and
+      acknowledgement of that waiver.
+
+  (b) CONFORMITY: If the Software does not conform to its
+      description, You may be entitled to a remedy under the
+      applicable EU/UK consumer legislation.
+
+To exercise the right of withdrawal, follow the process documented
+in REFUND_POLICY.md.
+
+--------------------------------------------------------------------
+7. DISCLAIMER OF WARRANTY
+--------------------------------------------------------------------
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY
+OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT.
+
+THE LICENSOR DOES NOT WARRANT THAT:
+
+  (a) the Software will detect every issue in the scanned code;
+  (b) the Software will produce no false positives or false negatives;
+  (c) a clean scan means the scanned code is secure, correct, or
+      complete;
+  (d) the Software will run uninterrupted or error-free on every
+      environment.
+
+The Software is a pattern-based sanity checker. It is NOT a security
+audit, NOT a substitute for professional security review, and NOT a
+guarantee of code quality.
+
+--------------------------------------------------------------------
+8. LIMITATION OF LIABILITY
+--------------------------------------------------------------------
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE TOTAL
+AGGREGATE LIABILITY OF THE LICENSOR ARISING OUT OF OR RELATING TO
+THIS AGREEMENT OR THE SOFTWARE SHALL NOT EXCEED THE AMOUNT ACTUALLY
+PAID BY YOU FOR THE SOFTWARE.
+
+IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY INDIRECT,
+INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR ANY
+LOSS OF PROFITS, DATA, BUSINESS, OR GOODWILL, ARISING OUT OF OR
+RELATING TO THE USE OR INABILITY TO USE THE SOFTWARE.
+
+NOTHING IN THIS SECTION EXCLUDES OR LIMITS LIABILITY THAT CANNOT BE
+EXCLUDED OR LIMITED UNDER APPLICABLE MANDATORY LAW.
+
+--------------------------------------------------------------------
+9. TERMINATION
+--------------------------------------------------------------------
+
+This Agreement is effective until terminated. Your rights under this
+Agreement terminate automatically if You materially breach any of its
+terms. Upon termination, You must stop using the Software and delete
+all copies in Your possession or control.
+
+Sections 3, 4, 7, 8, 10, and 11 survive termination.
+
+--------------------------------------------------------------------
+10. GOVERNING LAW
+--------------------------------------------------------------------
+
+This Agreement is governed by the laws of England and Wales, without
+regard to its conflict of law rules. Any dispute that cannot be
+resolved amicably shall be subject to the exclusive jurisdiction of
+the courts of England and Wales, except that mandatory consumer
+protections in Your country of residence may grant You the right to
+bring proceedings in Your local courts.
+
+--------------------------------------------------------------------
+11. ENTIRE AGREEMENT
+--------------------------------------------------------------------
+
+This Agreement, together with TERMS_OF_USE.md, REFUND_POLICY.md, and
+SECURITY.md, constitutes the entire agreement between You and the
+Licensor concerning the Software.
+
+If any provision is held unenforceable, the remaining provisions
+remain in full force and effect.
+
+--------------------------------------------------------------------
+END OF LICENSE
+--------------------------------------------------------------------

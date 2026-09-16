@@ -1,0 +1,41 @@
+# Internal documentation (not for public repo)
+spec.md
+docs/
+marketing/
+
+# Internal tooling
+benchmarks/
+tools/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.venv/
+venv/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# CodeFence runtime
+.codefence/
+results.sarif
+
+# Local environment
+.env
+.env.local

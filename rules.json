@@ -1,0 +1,691 @@
+{
+  "version": "1.0.0",
+  "schema": "codefence/rules-v1",
+  "rules": [
+    {
+      "id": "R001",
+      "name": "Hardcoded API keys / secrets",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "critical",
+      "category": "secrets",
+      "description": "Hardcoded key/token/password detected in source.",
+      "detection": "regex",
+      "patterns": [
+        "(?i)(api[_-]?key|secret|token|password|passwd|pwd)\\s*[=:]\\s*[\"'][A-Za-z0-9_\\-]{12,}[\"']",
+        "\\bsk-[A-Za-z0-9]{16,}\\b",
+        "\\bghp_[A-Za-z0-9]{20,}\\b",
+        "\\bAKIA[0-9A-Z]{16}\\b"
+      ],
+      "message": "Possible hardcoded secret detected.",
+      "remediation": "Move the value to an environment variable or a secret manager.",
+      "references": [
+        "CWE-798",
+        "CWE-259"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "API_KEY = \"sk-abcdef1234567890\"",
+      "fix_after": "API_KEY = os.environ[\"API_KEY\"]"
+    },
+    {
+      "id": "R002",
+      "name": "SQL injection via string concatenation",
+      "languages": [
+        "python"
+      ],
+      "severity": "critical",
+      "category": "injection",
+      "description": "SQL query built via concatenation or f-string.",
+      "detection": "ast",
+      "handler": "check_sql_injection_python",
+      "message": "Possible SQL injection - use parameterized queries.",
+      "remediation": "Use cursor.execute(\"... = ?\", (value,)) instead of string building.",
+      "references": [
+        "CWE-89"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "cursor.execute(\"SELECT * FROM t WHERE id = \" + uid)",
+      "fix_after": "cursor.execute(\"SELECT * FROM t WHERE id = ?\", (uid,))"
+    },
+    {
+      "id": "R003",
+      "name": "eval() / exec() on untrusted input",
+      "languages": [
+        "python"
+      ],
+      "severity": "critical",
+      "category": "injection",
+      "description": "Use of eval() or exec() may allow arbitrary code execution.",
+      "detection": "ast",
+      "handler": "check_eval_exec_python",
+      "message": "Use of eval/exec detected.",
+      "remediation": "Replace with ast.literal_eval for literals, or a safe parser.",
+      "references": [
+        "CWE-95"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "result = eval(user_input)",
+      "fix_after": "result = ast.literal_eval(user_input)  # literals only"
+    },
+    {
+      "id": "R004",
+      "name": "Command injection via shell=True",
+      "languages": [
+        "python"
+      ],
+      "severity": "critical",
+      "category": "injection",
+      "description": "subprocess call with shell=True can lead to command injection.",
+      "detection": "ast",
+      "handler": "check_shell_true_python",
+      "message": "subprocess call with shell=True detected.",
+      "remediation": "Pass arguments as a list and set shell=False.",
+      "references": [
+        "CWE-78"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "subprocess.run(\"ls \" + name, shell=True)",
+      "fix_after": "subprocess.run([\"ls\", name], shell=False)"
+    },
+    {
+      "id": "R005",
+      "name": "innerHTML with unsanitized data",
+      "languages": [
+        "javascript"
+      ],
+      "severity": "critical",
+      "category": "injection",
+      "description": "Assignment to innerHTML or document.write with non-literal data.",
+      "detection": "lexical",
+      "handler": "check_innerhtml_js",
+      "message": "innerHTML / document.write with dynamic data.",
+      "remediation": "Use textContent, or sanitize with DOMPurify.",
+      "references": [
+        "CWE-79"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "el.innerHTML = userInput;",
+      "fix_after": "el.textContent = userInput;  // or DOMPurify.sanitize(userInput)"
+    },
+    {
+      "id": "R006",
+      "name": "Missing authentication on endpoints",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "critical",
+      "category": "auth",
+      "description": "Route registered without an auth decorator or middleware.",
+      "detection": "lexical",
+      "handler": "check_missing_auth",
+      "message": "Route without authentication detected.",
+      "remediation": "Add an auth decorator or middleware on the route.",
+      "references": [
+        "CWE-306"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "@app.get(\"/admin/users\")\ndef list_users(): ...",
+      "fix_after": "@app.get(\"/admin/users\")\n@login_required\ndef list_users(): ..."
+    },
+    {
+      "id": "R007",
+      "name": "Overly permissive CORS (*)",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "config",
+      "description": "CORS allows any origin.",
+      "detection": "regex",
+      "patterns": [
+        "allow_origins\\s*=\\s*\\[\\s*[\"']\\*[\"']\\s*\\]",
+        "Access-Control-Allow-Origin[\"']?\\s*[:=]\\s*[\"']\\*[\"']",
+        "cors\\(\\s*\\)",
+        "origin\\s*:\\s*[\"']\\*[\"']"
+      ],
+      "message": "Permissive CORS detected.",
+      "remediation": "Restrict allowed origins to a known list.",
+      "references": [
+        "CWE-942"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "allow_origins = [\"*\"]",
+      "fix_after": "allow_origins = [\"https://app.example.com\"]"
+    },
+    {
+      "id": "R008",
+      "name": "Insecure random for security tokens",
+      "languages": [
+        "python"
+      ],
+      "severity": "high",
+      "category": "crypto",
+      "description": "random module used for tokens or secrets.",
+      "detection": "ast",
+      "handler": "check_random_python",
+      "message": "random module used - not cryptographically secure.",
+      "remediation": "Use secrets module for tokens and secrets.",
+      "references": [
+        "CWE-338"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "token = random.randint(1000, 9999)",
+      "fix_after": "token = secrets.token_urlsafe(32)"
+    },
+    {
+      "id": "R009",
+      "name": "Disabled TLS/SSL verification",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "crypto",
+      "description": "TLS verification disabled in HTTP request or global config.",
+      "detection": "regex",
+      "patterns": [
+        "verify\\s*=\\s*False",
+        "_create_unverified_context\\s*\\(",
+        "NODE_TLS_REJECT_UNAUTHORIZED\\s*[=:]\\s*[\"']?0",
+        "rejectUnauthorized\\s*:\\s*false"
+      ],
+      "message": "TLS verification disabled.",
+      "remediation": "Remove verify=False and do not disable TLS verification.",
+      "references": [
+        "CWE-295"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "requests.get(url, verify=False)",
+      "fix_after": "requests.get(url)  # verify=True is the default"
+    },
+    {
+      "id": "R010",
+      "name": "Path traversal",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "injection",
+      "description": "Path built from user input without containment check.",
+      "detection": "ast",
+      "handler": "check_path_traversal",
+      "message": "Possible path traversal.",
+      "remediation": "Resolve the path and verify it stays inside the base directory.",
+      "references": [
+        "CWE-22"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "open(os.path.join(BASE, user_path))",
+      "fix_after": "full = os.path.realpath(os.path.join(BASE, user_path))\nif not full.startswith(os.path.realpath(BASE)):\n    raise ValueError(\"path traversal\")\nopen(full)"
+    },
+    {
+      "id": "R011",
+      "name": "Hardcoded database credentials",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "critical",
+      "category": "secrets",
+      "description": "Database URL with credentials hardcoded.",
+      "detection": "regex",
+      "patterns": [
+        "(?i)(postgres|postgresql|mysql|mariadb|mongodb|redis|amqp)://[A-Za-z0-9_\\-]+:[^@\\s\"']+@"
+      ],
+      "message": "Hardcoded database credentials detected.",
+      "remediation": "Load the connection string from environment variables.",
+      "references": [
+        "CWE-798"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "DATABASE_URL = \"postgres://admin:s3cr3t@db/app\"",
+      "fix_after": "DATABASE_URL = os.environ[\"DATABASE_URL\"]"
+    },
+    {
+      "id": "R012",
+      "name": "Broad except: pass",
+      "languages": [
+        "python"
+      ],
+      "severity": "medium",
+      "category": "quality",
+      "description": "Bare except or except Exception with pass silently swallows errors.",
+      "detection": "ast",
+      "handler": "check_except_pass_python",
+      "message": "Broad exception silently ignored.",
+      "remediation": "Catch specific exceptions and log or handle them.",
+      "references": [
+        "CWE-390"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "try:\n    risky()\nexcept:\n    pass",
+      "fix_after": "try:\n    risky()\nexcept SpecificError as e:\n    logger.warning(\"risky failed: %s\", e)"
+    },
+    {
+      "id": "R013",
+      "name": "Mutable default arguments",
+      "languages": [
+        "python"
+      ],
+      "severity": "medium",
+      "category": "quality",
+      "description": "Function defined with a mutable default argument.",
+      "detection": "ast",
+      "handler": "check_mutable_defaults_python",
+      "message": "Mutable default argument detected.",
+      "remediation": "Use None as the default and create the mutable inside the function.",
+      "references": [],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "def add(item, items=[]):\n    items.append(item)",
+      "fix_after": "def add(item, items=None):\n    items = items if items is not None else []\n    items.append(item)"
+    },
+    {
+      "id": "R014",
+      "name": "Prototype pollution",
+      "languages": [
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "injection",
+      "description": "Assignment to __proto__ or dynamic key assignment into objects.",
+      "detection": "lexical",
+      "handler": "check_prototype_pollution_js",
+      "message": "Potential prototype pollution.",
+      "remediation": "Reject __proto__ and constructor keys; validate user input.",
+      "references": [
+        "CWE-1321"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "obj[key] = value;  // key from user input",
+      "fix_after": "if (key === \"__proto__\" || key === \"constructor\") throw new Error();\nobj[key] = value;"
+    },
+    {
+      "id": "R015",
+      "name": "Missing rate limiting on public endpoints",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "auth",
+      "description": "Login or public endpoint without a rate limiter.",
+      "detection": "lexical",
+      "handler": "check_missing_rate_limit",
+      "message": "Public endpoint without visible rate limiting.",
+      "remediation": "Apply a rate limiter on login and public endpoints.",
+      "references": [
+        "CWE-770"
+      ],
+      "confidence": "low",
+      "enabled": true,
+      "fix_before": "@app.post(\"/login\")",
+      "fix_after": "@limiter.limit(\"5/minute\")\n@app.post(\"/login\")"
+    },
+    {
+      "id": "R016",
+      "name": "MD5/SHA1 for password hashing",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "critical",
+      "category": "crypto",
+      "description": "Weak hash used for password hashing.",
+      "detection": "regex",
+      "patterns": [
+        "hashlib\\.(md5|sha1)\\s*\\(",
+        "createHash\\s*\\(\\s*[\"'](md5|sha1)[\"']\\s*\\)"
+      ],
+      "message": "Weak hash function for password hashing.",
+      "remediation": "Use bcrypt, argon2, or scrypt.",
+      "references": [
+        "CWE-916"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "hashlib.md5(password.encode()).hexdigest()",
+      "fix_after": "bcrypt.hashpw(password.encode(), bcrypt.gensalt())"
+    },
+    {
+      "id": "R017",
+      "name": "Debug mode left enabled",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "config",
+      "description": "Debug mode enabled literally in source.",
+      "detection": "regex",
+      "patterns": [
+        "debug\\s*=\\s*True",
+        "DEBUG\\s*=\\s*True"
+      ],
+      "message": "Debug mode enabled.",
+      "remediation": "Load debug flag from environment, default False in production.",
+      "references": [
+        "CWE-489"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "app.run(debug=True)",
+      "fix_after": "app.run(debug=os.environ.get(\"DEBUG\") == \"1\")"
+    },
+    {
+      "id": "R018",
+      "name": "Open redirect",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "auth",
+      "description": "Redirect target taken from user-controlled input without validation.",
+      "detection": "lexical",
+      "handler": "check_open_redirect",
+      "message": "Possible open redirect.",
+      "remediation": "Only allow relative paths, or validate against an allowlist of hosts.",
+      "references": [
+        "CWE-601"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "return redirect(request.args.get(\"next\"))",
+      "fix_after": "nxt = request.args.get(\"next\", \"/\")\nif not nxt.startswith(\"/\"):\n    nxt = \"/\"\nreturn redirect(nxt)"
+    },
+    {
+      "id": "R019",
+      "name": "Unsafe deserialization",
+      "languages": [
+        "python"
+      ],
+      "severity": "critical",
+      "category": "injection",
+      "description": "pickle.loads or yaml.load used on untrusted data.",
+      "detection": "regex",
+      "patterns": [
+        "pickle\\.loads?\\s*\\(",
+        "yaml\\.load\\s*\\([^,)]*\\)",
+        "dill\\.loads?\\s*\\(",
+        "marshal\\.loads?\\s*\\("
+      ],
+      "message": "Unsafe deserialization detected.",
+      "remediation": "Use json, or yaml.safe_load for untrusted input.",
+      "references": [
+        "CWE-502"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "data = pickle.loads(payload)",
+      "fix_after": "data = json.loads(payload)"
+    },
+    {
+      "id": "R020",
+      "name": "Never-expiring tokens / JWT",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "auth",
+      "description": "JWT issued without an expiration claim.",
+      "detection": "lexical",
+      "handler": "check_jwt_no_exp",
+      "message": "JWT issued without expiration.",
+      "remediation": "Add exp (seconds) or expiresIn option.",
+      "references": [
+        "CWE-613"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "jwt.encode({\"sub\": uid}, key, algorithm=\"HS256\")",
+      "fix_after": "jwt.encode({\"sub\": uid, \"exp\": now + 3600}, key, algorithm=\"HS256\")"
+    },
+    {
+      "id": "R021",
+      "name": "Missing security headers (Express)",
+      "languages": [
+        "javascript"
+      ],
+      "severity": "medium",
+      "category": "config",
+      "description": "Express app defined without helmet.",
+      "detection": "lexical",
+      "handler": "check_missing_helmet_js",
+      "message": "Express app without helmet middleware.",
+      "remediation": "Add app.use(helmet()).",
+      "references": [
+        "CWE-693"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "const app = express();",
+      "fix_after": "const app = express();\napp.use(helmet());"
+    },
+    {
+      "id": "R022",
+      "name": "Race conditions in async code",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "medium",
+      "category": "concurrency",
+      "description": "Check-then-act on filesystem or shared state.",
+      "detection": "lexical",
+      "handler": "check_race_conditions",
+      "message": "Possible race condition (check-then-act).",
+      "remediation": "Use atomic operations (open 'x', atomic rename, locks).",
+      "references": [
+        "CWE-362"
+      ],
+      "confidence": "low",
+      "enabled": true,
+      "fix_before": "if not os.path.exists(path):\n    open(path, \"w\").write(data)",
+      "fix_after": "try:\n    with open(path, \"x\") as f:\n        f.write(data)\nexcept FileExistsError:\n    pass"
+    },
+    {
+      "id": "R023",
+      "name": "Logging sensitive data",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "privacy",
+      "description": "Password, token, or secret passed to a logger or console.",
+      "detection": "regex",
+      "patterns": [
+        "(?i)(logger|logging|console|print)\\.[a-z]+\\([^)]*(password|passwd|pwd|token|secret|apikey|api_key)[^)]*\\)",
+        "(?i)(logger|logging|console)\\.(info|debug|warn|warning|error|log)\\([^)]*\\b(token|password|secret)\\b"
+      ],
+      "message": "Possible sensitive data logged.",
+      "remediation": "Remove secrets from log statements.",
+      "references": [
+        "CWE-532"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "logger.info(\"login: %s / %s\", user, password)",
+      "fix_after": "logger.info(\"login: %s\", user)"
+    },
+    {
+      "id": "R024",
+      "name": "Unused imports / dead code",
+      "languages": [
+        "python"
+      ],
+      "severity": "low",
+      "category": "quality",
+      "description": "Import statement that is never referenced.",
+      "detection": "ast",
+      "handler": "check_unused_imports_python",
+      "message": "Unused import detected.",
+      "remediation": "Remove the unused import.",
+      "references": [],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "import os\nimport sys  # unused",
+      "fix_after": "import os"
+    },
+    {
+      "id": "R025",
+      "name": "Promise rejection ignored",
+      "languages": [
+        "javascript"
+      ],
+      "severity": "medium",
+      "category": "quality",
+      "description": "Promise chain without catch, or async call without try/catch.",
+      "detection": "lexical",
+      "handler": "check_promise_rejection_js",
+      "message": "Promise rejection may be silently ignored.",
+      "remediation": "Add .catch() or wrap await in try/catch.",
+      "references": [
+        "CWE-391"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "fetch(url).then(r => r.json());",
+      "fix_after": "fetch(url).then(r => r.json()).catch(handleError);"
+    },
+    {
+      "id": "R026",
+      "name": "HTTP request without timeout",
+      "languages": [
+        "python"
+      ],
+      "severity": "medium",
+      "category": "reliability",
+      "description": "requests call without a timeout can hang indefinitely.",
+      "detection": "ast",
+      "handler": "check_requests_no_timeout_python",
+      "message": "HTTP request without timeout.",
+      "remediation": "Pass timeout=<seconds> to requests calls.",
+      "references": [
+        "CWE-400"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "requests.get(\"https://api.example.com\")",
+      "fix_after": "requests.get(\"https://api.example.com\", timeout=10)"
+    },
+    {
+      "id": "R027",
+      "name": "Naive datetime (no timezone)",
+      "languages": [
+        "python"
+      ],
+      "severity": "medium",
+      "category": "reliability",
+      "description": "datetime.now()/utcnow() without tz produces naive datetimes.",
+      "detection": "ast",
+      "handler": "check_datetime_no_tz_python",
+      "message": "Naive datetime created without timezone.",
+      "remediation": "Use datetime.now(timezone.utc) or timezone-aware arithmetic.",
+      "references": [
+        "CWE-190"
+      ],
+      "confidence": "medium",
+      "enabled": true,
+      "fix_before": "exp = datetime.now() + timedelta(hours=1)",
+      "fix_after": "exp = datetime.now(timezone.utc) + timedelta(hours=1)"
+    },
+    {
+      "id": "R028",
+      "name": "Env var with hardcoded fallback secret",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "secrets",
+      "description": "Secret is loaded from an environment variable but with a non-empty hardcoded fallback. If the env var is missing in production, the fallback is silently used.",
+      "detection": "ast",
+      "handler": "check_env_fallback_secret",
+      "message": "Environment variable with hardcoded fallback secret.",
+      "remediation": "Remove the fallback and fail fast if the variable is missing.",
+      "references": [
+        "CWE-1188",
+        "CWE-798"
+      ],
+      "confidence": "high",
+      "enabled": true,
+      "fix_before": "SECRET = os.environ.get(\"JWT_SECRET_KEY\", \"CHANGE-ME\")",
+      "fix_after": "SECRET = os.environ[\"JWT_SECRET_KEY\"]  # fail fast if missing"
+    },
+    {
+      "id": "R030",
+      "name": "Typosquatted package import",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "high",
+      "category": "supply-chain",
+      "description": "Import of a package whose name closely resembles a popular package (typosquatting).",
+      "detection": "regex",
+      "patterns": [
+        "\\bimport\\s+(reqeusts|requsets|requsts|requets|rquests)\\b",
+        "\\bfrom\\s+(reqeusts|requsets|requsts|requets|rquests)\\b",
+        "\\bimport\\s+(numpys|numppy|nunpy|numpi|nunmpy)\\b",
+        "\\bfrom\\s+(numpys|numppy|nunpy|numpi|nunmpy)\\b",
+        "\\bimport\\s+(panadas|pandass|pandas1|pands)\\b",
+        "\\bfrom\\s+(panadas|pandass|pandas1|pands)\\b",
+        "\\bimport\\s+(djagno|django1|djnago|djangoo)\\b",
+        "\\bfrom\\s+(djagno|django1|djnago|djangoo)\\b",
+        "require\\s*\\(\\s*['\\\"](reqeusts|requsets|requsts|requets|rquests)['\\\"]",
+        "require\\s*\\(\\s*['\\\"](expresss|expres|exrpess|exppress)['\\\"]",
+        "require\\s*\\(\\s*['\\\"](lodahs|lodas|loadsh|lodsah)['\\\"]"
+      ],
+      "message": "Typosquatted package import detected.",
+      "remediation": "Verify the package name. The intended package may be spelled differently.",
+      "references": [
+        "CWE-1357"
+      ],
+      "confidence": "high",
+      "enabled": true
+    },
+    {
+      "id": "R031",
+      "name": "TODO / FIXME / HACK in new code",
+      "languages": [
+        "python",
+        "javascript"
+      ],
+      "severity": "medium",
+      "category": "quality",
+      "description": "Developer-marker comment left in code. Common in AI-generated output that is committed without review.",
+      "detection": "regex",
+      "patterns": [
+        "#\\s*(TODO|FIXME|HACK|XXX)\\b[^\\n]*",
+        "//\\s*(TODO|FIXME|HACK|XXX)\\b[^\\n]*",
+        "/\\*\\s*(TODO|FIXME|HACK|XXX)\\b"
+      ],
+      "message": "TODO/FIXME/HACK marker in code.",
+      "remediation": "Address the item or remove the marker before committing.",
+      "references": [],
+      "confidence": "high",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codefence"
+version = "1.0.0"
+description = "A tiny offline policy gate for code. Check AI-generated code before it reaches Git."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "CodeFence"},
+]
+keywords = [
+    "security", "static-analysis", "pre-commit", "git-hook",
+    "ai-generated-code", "sast", "sarif", "offline", "policy",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Security",
+]
+
+[project.urls]
+Homepage = "https://codefence.dev"
+Source = "https://github.com/USERNAME/codefence"
+Issues = "https://github.com/USERNAME/codefence/issues"
+Changelog = "https://github.com/USERNAME/codefence/blob/main/CHANGELOG.md"
+
+[project.scripts]
+cfence = "codefence:main"
+codefence = "codefence:main"
+
+[tool.setuptools]
+py-modules = ["codefence"]
+
+[tool.setuptools.package-data]
+codefence = ["rules.json"]
+
+[tool.setuptools.data-files]
+"." = [
+    "rules.json",
+    "README.md",
+    "LICENSE.txt",
+    "LICENSE_FAQ.md",
+    "TERMS_OF_USE.md",
+    "REFUND_POLICY.md",
+    "SECURITY.md",
+    "NOTICE.md",
+    "CHANGELOG.md",
+]
+"share/codefence/samples" = [
+    "samples/bad_python.py",
+    "samples/bad_javascript.js",
+    "samples/clean_example.py",
+    "samples/clean_example.js",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
