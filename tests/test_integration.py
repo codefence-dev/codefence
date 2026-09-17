@@ -198,7 +198,8 @@ def test_sarif_full_schema(repo):
     # driver
     driver = run["tool"]["driver"]
     assert driver["name"] == "codefence"
-    assert driver["version"] == "1.0.0"
+    import codefence as cf
+    assert driver["version"] == cf.TOOL_VERSION
     assert isinstance(driver["rules"], list)
     assert len(driver["rules"]) >= 1
 

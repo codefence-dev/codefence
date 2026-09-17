@@ -40,7 +40,7 @@ from typing import Callable, Iterable, Iterator, Sequence
 # =============================================================================
 
 TOOL_NAME = "codefence"
-TOOL_VERSION = "1.0.0"
+TOOL_VERSION = "1.0.8"
 RULES_SCHEMA = "codefence/rules-v1"
 DEFAULT_MAX_SIZE = 2 * 1024 * 1024
 DEFAULT_RULES_FILENAME = "rules.json"
@@ -2093,54 +2093,53 @@ def report_cli(findings: Sequence[Finding],
                files_scanned: int,
                duration_ms: int,
                use_color: bool,
-               quiet: bool = False) -> str:
-    W = 64
+               quiet: bool = False,
+               verbose: bool = False) -> str:
+    """Compact, honest CLI output for direct scans.
+
+    Design principles:
+    - One-line header, no banner box.
+    - Severity-grouped findings, each as a 3-line block.
+    - Snippet and fix diff are opt-in via verbose=True.
+    - One-line summary at the end, no box.
+    """
+    W = 62
     out: list[str] = []
 
-    # --- Header box ---
-    brand = _c("CodeFence", Severity.INFO, use_color)
-    ver = f"v{TOOL_VERSION}"
-    line1 = f"  {brand}  {_c('\u00b7', Severity.LOW, use_color)}  {ver}"
-    line2 = "  Pattern-based sanity check \u00b7 not a security audit"
-    out.append(_box_top(W))
-    out.append(_box_row(line1, W))
-    out.append(_box_row(line2, W))
-    out.append(_box_bot(W))
-    out.append("")
+    files_word = "file" if files_scanned == 1 else "files"
 
     if quiet:
-        # quiet: only summary
         summary = _summary_counts(findings)
-        out.append(f"  Scanned {files_scanned} file(s) in {duration_ms} ms")
+        out.append(
+            f"CodeFence v{TOOL_VERSION} \u00b7 "
+            f"{files_scanned} {files_word} \u00b7 {duration_ms} ms"
+        )
         out.append(_format_summary_inline(summary, use_color))
         return "\n".join(out)
 
-    # --- Scan info ---
-    clock = _c(_ICON_CLOCK, Severity.INFO, use_color)
-    plural = "file" if files_scanned == 1 else "files"
+    # --- Header: one line ---
+    brand = _c("CodeFence", Severity.INFO, use_color)
+    version = _c(f"v{TOOL_VERSION}", Severity.LOW, use_color)
+    dot = _c("\u00b7", Severity.LOW, use_color)
     out.append(
-        f"  {clock}  Scanned {files_scanned} {plural} "
-        f"\u00b7 {duration_ms} ms"
+        f"{brand} {version} {dot} "
+        f"{files_scanned} {files_word} {dot} {duration_ms} ms"
     )
     out.append("")
 
+    # --- No findings ---
     if not findings:
         if files_scanned == 0:
             warn = _c("No files matched.", Severity.MEDIUM, use_color)
-            out.append(f"  {warn}")
-            out.append(
-                "  Check your paths, --include, and --exclude options."
-            )
+            out.append(warn)
+            out.append("Check your paths, --include, and --exclude options.")
         else:
-            check = _c(_ICON_CHECK, Severity.INFO, use_color)
-            out.append(
-                f"  {check}  {_c('No findings.', Severity.LOW, use_color)}"
-            )
-        out.append("")
-        out.append(_summary_box(findings, W, use_color))
+            check = _c("\u2714", Severity.INFO, use_color)
+            clean = _c("No findings.", Severity.LOW, use_color)
+            out.append(f"{check}  {clean}")
         return "\n".join(out)
 
-    # --- Group by severity, ordered ---
+    # --- Group by severity ---
     order = [Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM,
              Severity.LOW, Severity.INFO]
     groups: dict[Severity, list[Finding]] = {s: [] for s in order}
@@ -2154,67 +2153,141 @@ def report_cli(findings: Sequence[Finding],
         label = _SEV_LABEL[sev]
         count = len(bucket)
         count_word = "finding" if count == 1 else "findings"
-        header = (f"  {_c(_BOX_BAR, sev, use_color)}"
-                  f"{_c(label, sev, use_color)}  "
-                  f"{_c(str(count), sev, use_color)} {count_word}")
+        header = (
+            f"{_c(label, sev, use_color)}  "
+            f"{_c(str(count), sev, use_color)} {count_word}"
+        )
         out.append(header)
-        out.append("  " + _hr(W - 2))
+        out.append(_hr(W))
         for f in bucket:
-            mark = _c(_ICON_FINDING, sev, use_color)
-            rid = _c(f.id, sev, use_color)
-            out.append(f"  {mark}  {rid}  {f.rule_name}")
-            out.append(f"     {_c(f.file, Severity.LOW, use_color)}:"
-                       f"{f.line}:{f.column}")
-            out.append(f"     {f.message}")
-            if f.snippet:
-                snip = f.snippet
-                if len(snip) > 100:
-                    snip = snip[:97] + "..."
-                out.append(f"     {_c('>', Severity.LOW, use_color)} {snip}")
+            mark = _c("\u2716", sev, use_color)
+            rid = _c(f.id, Severity.LOW, use_color)
+            out.append(f"{mark}  {rid}  {f.rule_name}")
+            loc = _c(f"{f.file}:{f.line}:{f.column}", Severity.LOW, use_color)
+            out.append(f"   {loc}")
             if f.remediation:
-                out.append(f"     {_c(_ICON_ARROW, Severity.INFO, use_color)}"
-                           f"  {_c(f.remediation, Severity.LOW, use_color)}")
-            if f.fix_before or f.fix_after:
-                out.append("")
-                out.append(f"     {_c('Typical fix:', Severity.INFO, use_color)}")
-                for line in f.fix_before.split("\n"):
-                    prefix = _c("  - ", Severity.CRITICAL, use_color)
-                    out.append(f"     {prefix}{line}")
-                for line in f.fix_after.split("\n"):
-                    prefix = _c("  + ", Severity.INFO, use_color)
-                    out.append(f"     {prefix}{line}")
+                arrow = _c("\u21b3", Severity.INFO, use_color)
+                rem = _c(f.remediation, Severity.LOW, use_color)
+                out.append(f"   {arrow}  {rem}")
+            if verbose:
+                if f.snippet:
+                    snip = f.snippet
+                    if len(snip) > 100:
+                        snip = snip[:97] + "..."
+                    out.append(f"   > {snip}")
+                if f.fix_before or f.fix_after:
+                    out.append("   Typical fix:")
+                    for line in f.fix_before.split("\n"):
+                        out.append(f"     {_c('- ', Severity.CRITICAL, use_color)}{line}")
+                    for line in f.fix_after.split("\n"):
+                        out.append(f"     {_c('+ ', Severity.INFO, use_color)}{line}")
             out.append("")
 
-    out.append(_summary_box(findings, W, use_color))
+    # --- Compact summary line ---
+    parts: list[str] = []
+    total_real = 0
+    for sev in order:
+        n = len(groups[sev])
+        if n == 0:
+            continue
+        total_real += n
+        parts.append(f"{_c(str(n), sev, use_color)} {sev.value}")
+    out.append(_c("\u00b7", Severity.LOW, use_color).join(
+        [f" {p} " for p in parts]
+    ).strip() or "no findings")
+
+    if not verbose:
+        out.append("")
+        out.append(
+            _c("Run with --verbose to see snippets and fix examples.",
+               Severity.LOW, use_color)
+        )
+
     return "\n".join(out)
 
 
-def _summary_box(findings: Sequence[Finding], width: int,
-                 use_color: bool) -> str:
-    counts = _summary_counts(findings)
+def report_cli_gate(findings: Sequence[Finding],
+                    files_scanned: int,
+                    duration_ms: int,
+                    use_color: bool) -> str:
+    """Compact 'gate' output for git hook and --staged usage.
+
+    Three states: commit blocked, commit allowed (warning),
+    or commit passed. Designed to be readable at a glance and
+    stable enough for terminal scrollback in CI logs.
+    """
+    W = 62
     out: list[str] = []
-    title = _c(" Summary ", Severity.INFO, use_color)
-    dash_len = width - 4 - len(" Summary ")
-    top = (f"  {_BOX_TL}{_BOX_H} {title}{_BOX_H * dash_len}"
-           f"{_BOX_TR}")
-    out.append(top)
-    # two rows: critical/high  and  medium/low (+ info if present)
-    def cell(sev: Severity, count: int) -> str:
-        dot = _c(_ICON_DOT, sev, use_color)
-        name = _SEV_LABEL[sev].lower()
-        num = _c(f"{count:>3}", sev, use_color)
-        return f"{dot}  {name:<9} {num}"
-    has_info = counts.get("info", 0) > 0
-    row1 = f"  {cell(Severity.CRITICAL, counts.get('critical', 0))}" \
-           f"     {cell(Severity.HIGH, counts.get('high', 0))}"
-    row2 = f"  {cell(Severity.MEDIUM, counts.get('medium', 0))}" \
-           f"     {cell(Severity.LOW, counts.get('low', 0))}"
-    out.append(f"  {_BOX_V} {_pad_visible(row1[2:], width - 4)}{_BOX_V}")
-    out.append(f"  {_BOX_V} {_pad_visible(row2[2:], width - 4)}{_BOX_V}")
-    if has_info:
-        row3 = f"  {cell(Severity.INFO, counts.get('info', 0))}"
-        out.append(f"  {_BOX_V} {_pad_visible(row3[2:], width - 4)}{_BOX_V}")
-    out.append(f"  {_box_bot(width - 2)}")
+
+    has_block = any(getattr(f, "action", "block") == "block"
+                    for f in findings)
+    has_warn = any(getattr(f, "action", "block") == "warn"
+                   for f in findings)
+
+    brand = _c("CodeFence", Severity.INFO, use_color)
+    version = f"v{TOOL_VERSION}"
+
+    if has_block:
+        state = _c("commit blocked", Severity.CRITICAL, use_color)
+    elif has_warn:
+        state = _c("commit allowed (warning)", Severity.MEDIUM, use_color)
+    else:
+        state = _c("commit passed", Severity.INFO, use_color)
+
+    out.append(f"{brand} {version} \u00b7 {state}")
+    out.append(_hr(W))
+    out.append("")
+
+    if not findings:
+        files_word = "file" if files_scanned == 1 else "files"
+        out.append(
+            f"Scanned {files_scanned} staged {files_word} "
+            f"in {duration_ms} ms."
+        )
+        return "\n".join(out)
+
+    block_count = sum(
+        1 for f in findings
+        if getattr(f, "action", "block") == "block"
+    )
+    warn_count = len(findings) - block_count
+
+    if block_count and warn_count:
+        out.append(
+            f"{block_count} new "
+            f"finding{'s' if block_count != 1 else ''}, "
+            f"{warn_count} warning{'s' if warn_count != 1 else ''}"
+        )
+    elif block_count:
+        out.append(
+            f"{block_count} new "
+            f"finding{'s' if block_count != 1 else ''}"
+        )
+    elif warn_count:
+        out.append(
+            f"{warn_count} warning{'s' if warn_count != 1 else ''} "
+            f"(does not block)"
+        )
+    out.append("")
+
+    for f in findings:
+        action = getattr(f, "action", "block")
+        if action == "block":
+            icon = _c("\u2716", f.severity, use_color)
+        else:
+            icon = _c("\u26a0", Severity.MEDIUM, use_color)
+        sev = _c(_SEV_LABEL[f.severity], f.severity, use_color)
+        rid = _c(f.id, Severity.LOW, use_color)
+        out.append(f"  {icon} {sev}  {rid}  {f.rule_name}")
+        out.append(f"     {f.file}:{f.line}:{f.column}")
+        out.append("")
+
+    out.append(_hr(W))
+    if has_block:
+        out.append("Run `cfence explain RXXX` for remediation details.")
+    else:
+        out.append("Commit allowed.")
+
     return "\n".join(out)
 
 
@@ -2360,78 +2433,77 @@ def report_sarif(rules: Sequence[Rule],
 
 _HTML_CSS = """
 :root{
-  --bg:#f6f8fb;--card:#ffffff;--fg:#1a1f2e;--muted:#64748b;
+  --bg:#f8fafc;--card:#ffffff;--fg:#0f172a;--muted:#64748b;
   --border:#e2e8f0;--code-bg:#0f172a;--code-fg:#e2e8f0;
-  --crit:#dc2626;--high:#ea580c;--med:#d97706;--low:#64748b;--info:#0891b2;
-  --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+  --crit:#dc2626;--high:#ea580c;--med:#ca8a04;--low:#2563eb;--info:#0891b2;
+  --success:#16a34a;--success-bg:rgba(22,163,74,.08);
+  --error-bg:rgba(220,38,38,.08);
+  --shadow:0 1px 2px rgba(15,23,42,.05);
 }
 [data-theme="dark"]{
-  --bg:#0b1020;--card:#131a2e;--fg:#e8ecf5;--muted:#94a3b8;
-  --border:#1f2a44;--code-bg:#050912;--code-fg:#cbd5e1;
-  --crit:#f87171;--high:#fb923c;--med:#fbbf24;--low:#94a3b8;--info:#22d3ee;
-  --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --bg:#0b1020;--card:#111827;--fg:#e5e7eb;--muted:#94a3b8;
+  --border:#263244;--code-bg:#050912;--code-fg:#cbd5e1;
+  --crit:#f87171;--high:#fb923c;--med:#fbbf24;--low:#60a5fa;--info:#22d3ee;
+  --success:#4ade80;--success-bg:rgba(74,222,128,.10);
+  --error-bg:rgba(248,113,113,.10);
+  --shadow:0 1px 2px rgba(0,0,0,.3);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
-  padding:32px 20px 60px;font-family:-apple-system,BlinkMacSystemFont,
-  "Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  padding:28px 18px 60px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   background:var(--bg);color:var(--fg);line-height:1.5;
+  font-size:15px;
   transition:background .2s,color .2s;
 }
-.container{max-width:960px;margin:0 auto}
-header{margin-bottom:24px;display:flex;justify-content:space-between;
-       align-items:flex-start;gap:16px;flex-wrap:wrap}
-h1{margin:0 0 4px;font-size:26px;font-weight:700;letter-spacing:-.02em}
-.tagline{color:var(--muted);font-size:14px;margin:0}
-.meta{color:var(--muted);font-size:13px;margin-top:8px}
+.container{max-width:840px;margin:0 auto}
+header{margin-bottom:20px;display:flex;justify-content:space-between;
+       align-items:flex-start;gap:14px;flex-wrap:wrap}
+h1{margin:0 0 2px;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.tagline{color:var(--muted);font-size:13px;margin:0}
+.meta{color:var(--muted);font-size:12px;margin-top:6px;
+      font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
 button.theme-btn{
-  padding:6px 11px;border:1px solid var(--border);background:var(--card);
-  color:var(--fg);border-radius:8px;cursor:pointer;font-size:12px;
-  font-weight:500;box-shadow:var(--shadow);transition:transform .15s;
-  white-space:nowrap;flex-shrink:0;
+  padding:5px 10px;border:1px solid var(--border);background:var(--card);
+  color:var(--fg);border-radius:6px;cursor:pointer;font-size:12px;
+  font-weight:500;transition:transform .15s;white-space:nowrap;flex-shrink:0;
 }
 button.theme-btn:hover{transform:translateY(-1px)}
-.dashboard{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-  gap:12px;margin-bottom:24px;
+.summary-line{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;
+  padding:14px 0;margin-bottom:20px;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  font-size:14px;
 }
-.stat{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:16px 18px;box-shadow:var(--shadow);
-}
-.stat .label{font-size:11px;font-weight:600;text-transform:uppercase;
-             letter-spacing:.08em;color:var(--muted);margin-bottom:4px}
-.stat .value{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}
-.stat.crit .value{color:var(--crit)}
-.stat.high .value{color:var(--high)}
-.stat.med .value{color:var(--med)}
-.stat.low .value{color:var(--low)}
-.stat.info .value{color:var(--info)}
-.stat.total .value{color:var(--fg)}
+.summary-line .item{display:flex;align-items:baseline;gap:5px}
+.summary-line .num{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.summary-line .num.crit{color:var(--crit)}
+.summary-line .num.high{color:var(--high)}
+.summary-line .num.med{color:var(--med)}
+.summary-line .num.low{color:var(--low)}
+.summary-line .label{color:var(--muted);font-size:13px}
 h2.section{
-  font-size:13px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.1em;color:var(--muted);margin:28px 0 12px;
+  font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--muted);margin:26px 0 10px;
   display:flex;align-items:center;gap:10px;
 }
-h2.section::after{
-  content:"";flex:1;height:1px;background:var(--border);
-}
+h2.section::after{content:"";flex:1;height:1px;background:var(--border)}
 .card{
-  background:var(--card);border:1px solid var(--border);border-radius:12px;
-  padding:16px 18px;margin-bottom:10px;box-shadow:var(--shadow);
-  border-left:4px solid var(--border);
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;margin-bottom:8px;box-shadow:var(--shadow);
+  border-left:2px solid var(--border);
 }
 .card.critical{border-left-color:var(--crit)}
 .card.high{border-left-color:var(--high)}
 .card.medium{border-left-color:var(--med)}
 .card.low{border-left-color:var(--low)}
 .card.info{border-left-color:var(--info)}
-.card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;
+.card-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;
            flex-wrap:wrap}
 .badge{
-  display:inline-block;padding:3px 9px;border-radius:999px;
-  font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  display:inline-block;padding:2px 7px;border-radius:999px;
+  font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
 }
 .badge.critical{background:var(--crit);color:#fff}
 .badge.high{background:var(--high);color:#fff}
@@ -2439,26 +2511,26 @@ h2.section::after{
 .badge.low{background:var(--low);color:#fff}
 .badge.info{background:var(--info);color:#fff}
 .rule-id{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-         font-size:12px;font-weight:700;color:var(--muted);
-         padding:3px 7px;background:var(--bg);border-radius:6px}
+         font-size:11px;font-weight:700;color:var(--muted);
+         padding:2px 6px;background:var(--bg);border-radius:4px}
 .rule-name{font-weight:600;font-size:15px}
 .location{
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  font-size:12px;color:var(--muted);margin-bottom:8px;
+  font-size:12px;color:var(--muted);margin-bottom:6px;
   word-break:break-all;
 }
 .message{font-size:14px;margin-bottom:10px}
 pre.snippet{
   background:var(--code-bg);color:var(--code-fg);
-  padding:10px 12px;border-radius:8px;overflow-x:auto;
+  padding:10px 12px;border-radius:6px;overflow-x:auto;
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-  font-size:12.5px;line-height:1.5;margin:0 0 8px;white-space:pre-wrap;
-  word-break:break-word;
+  font-size:12.5px;line-height:1.5;margin:0 0 10px;
+  white-space:pre-wrap;word-break:break-word;
 }
 .remediation{
   font-size:13px;color:var(--muted);
-  padding:8px 12px;background:var(--bg);border-radius:8px;
-  border-left:3px solid var(--info);
+  padding:8px 12px;background:var(--bg);border-radius:6px;
+  border-left:2px solid var(--info);
   margin-bottom:10px;
 }
 .remediation strong{color:var(--fg);font-weight:600}
@@ -2466,13 +2538,14 @@ pre.snippet{
   margin-top:10px;
   background:var(--bg);
   border:1px solid var(--border);
-  border-radius:8px;
+  border-radius:6px;
   padding:10px 12px;
 }
 .fix-title{
-  font-size:11px;font-weight:700;text-transform:uppercase;
+  font-size:10px;font-weight:700;text-transform:uppercase;
   letter-spacing:.08em;color:var(--muted);margin-bottom:8px;
 }
+.fix-after-wrap{position:relative;padding-top:28px}
 pre.fix-before,pre.fix-after{
   margin:0 0 6px;
   padding:8px 10px;
@@ -2480,66 +2553,56 @@ pre.fix-before,pre.fix-after{
   font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   font-size:12.5px;line-height:1.5;
   white-space:pre-wrap;word-break:break-word;
+  color:var(--fg);
 }
 pre.fix-before{
-  background:rgba(220,38,38,.08);
-  color:var(--fg);
-  border-left:3px solid var(--crit);
+  background:var(--error-bg);
+  border-left:2px solid var(--crit);
 }
 pre.fix-after{
-  background:rgba(8,145,178,.10);
-  color:var(--fg);
-  border-left:3px solid var(--info);
+  background:var(--success-bg);
+  border-left:2px solid var(--success);
   margin-bottom:0;
 }
-pre.fix-before .ln,pre.fix-after .ln{
-  color:var(--muted);
-  font-weight:700;
-  user-select:none;
-}
-.fix-after-wrap{
-  position:relative;
-  padding-top:30px;
-}
+pre.fix-before .ln{color:var(--crit);font-weight:700;user-select:none}
+pre.fix-after .ln{color:var(--success);font-weight:700;user-select:none}
 .copy-btn{
-  position:absolute;
-  top:0;right:0;
+  position:absolute;top:0;right:0;
   display:inline-flex;align-items:center;gap:5px;
-  padding:4px 10px;
-  font-size:11px;font-weight:600;
-  border:1px solid var(--border);
-  background:var(--card);
-  color:var(--fg);
-  border-radius:6px;
-  cursor:pointer;
-  opacity:.95;
+  padding:4px 10px;font-size:11px;font-weight:600;
+  border:1px solid var(--border);background:var(--card);
+  color:var(--fg);border-radius:6px;cursor:pointer;
   transition:opacity .15s,transform .15s,background .15s;
 }
-.copy-btn:hover{opacity:1;transform:translateY(-1px)}
-.copy-btn:active{transform:translateY(0)}
-.copy-btn.copied{
-  background:var(--info);color:#fff;border-color:var(--info);
-}
+.copy-btn:hover{transform:translateY(-1px)}
+.copy-btn.copied{background:var(--success);color:#fff;border-color:var(--success)}
 .copy-btn .copy-icon{font-size:13px;line-height:1}
-@media (max-width:600px){
-  .fix-after-wrap{padding-top:28px}
-  .copy-btn{padding:5px 9px;font-size:11px}
-}
 .empty{
   text-align:center;padding:60px 20px;color:var(--muted);
-  background:var(--card);border:1px dashed var(--border);border-radius:12px;
+  background:var(--card);border:1px dashed var(--border);border-radius:10px;
 }
-.empty .icon{font-size:48px;margin-bottom:12px;display:block}
+.empty .icon{font-size:44px;margin-bottom:10px;display:block;
+              color:var(--success)}
 footer{
-  margin-top:40px;text-align:center;color:var(--muted);font-size:12px;
-  padding-top:20px;border-top:1px solid var(--border);
+  margin-top:36px;padding-top:16px;border-top:1px solid var(--border);
+  color:var(--muted);font-size:11px;text-align:center;
+  font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 @media (max-width:600px){
-  body{padding:20px 14px 40px}
-  h1{font-size:22px}
-  .stat .value{font-size:22px}
+  body{padding:18px 12px 40px;font-size:14px}
+  h1{font-size:19px}
+  .summary-line .num{font-size:17px}
+  .summary-line{gap:10px}
+}
+@media print{
+  body{padding:12px;background:#fff;color:#000}
+  button.theme-btn,.copy-btn{display:none}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #ddd}
+  pre.snippet{background:#f5f5f5;color:#000;border:1px solid #ddd}
 }
 """
+
+
 
 _HTML_JS = r"""
 (function(){
@@ -2623,23 +2686,22 @@ def report_html(findings: Sequence[Finding],
     counts = _summary_counts(findings)
     total = len([f for f in findings if f.severity != Severity.INFO])
 
-    def stat(cls: str, label: str, value: int) -> str:
+    def item(cls: str, num: int, label: str) -> str:
         return (
-            f'<div class="stat {cls}">'
-            f'<div class="label">{esc(label)}</div>'
-            f'<div class="value">{value}</div>'
-            f'</div>'
+            f'<span class="item">'
+            f'<span class="num {cls}">{num}</span>'
+            f'<span class="label">{esc(label)}</span>'
+            f'</span>'
         )
 
     dashboard = (
-        stat("total", "Total", total)
-        + stat("crit", "Critical", counts.get("critical", 0))
-        + stat("high", "High", counts.get("high", 0))
-        + stat("med", "Medium", counts.get("medium", 0))
-        + stat("low", "Low", counts.get("low", 0))
-        + (stat("info", "Info", counts.get("info", 0))
-           if counts.get("info", 0) else "")
+        item("crit", counts.get("critical", 0), "critical")
+        + item("high", counts.get("high", 0), "high")
+        + item("med", counts.get("medium", 0), "medium")
+        + item("low", counts.get("low", 0), "low")
     )
+    if counts.get("info", 0):
+        dashboard += item("low", counts.get("info", 0), "info")
 
     if not findings:
         body = (
@@ -2691,7 +2753,7 @@ def report_html(findings: Sequence[Finding],
                         parts.append('<pre class="fix-before">')
                         for ln in f.fix_before.split("\n"):
                             parts.append(f'<span class="ln">- </span>'
-                                         f'{esc(ln)}')
+                                         f'{esc(ln)}\n')
                         parts.append('</pre>')
                     if f.fix_after:
                         parts.append(
@@ -2706,7 +2768,7 @@ def report_html(findings: Sequence[Finding],
                         )
                         for ln in f.fix_after.split("\n"):
                             parts.append(f'<span class="ln">+ </span>'
-                                         f'{esc(ln)}')
+                                         f'{esc(ln)}\n')
                         parts.append('</pre>')
                         parts.append('</div>')
                     parts.append('</div>')
@@ -2752,11 +2814,12 @@ def report_html(findings: Sequence[Finding],
         "</div>\n"
         '<button id="theme" class="theme-btn">Toggle theme</button>\n'
         "</header>\n"
-        f'<div class="dashboard">{dashboard}</div>\n'
+        f'<div class="summary-line">{dashboard}</div>\n'
         f"{body}\n"
         "<footer>\n"
-        f"Generated by {esc(TOOL_NAME)} v{esc(TOOL_VERSION)} "
-        "&middot; Offline &middot; Zero network calls\n"
+        f"{esc(TOOL_NAME)} v{esc(TOOL_VERSION)} &middot; "
+        "offline &middot; zero network calls &middot; "
+        "pattern-based sanity check, not a security audit\n"
         "</footer>\n"
         "</div>\n"
         f"<script>{_HTML_JS}</script>\n"
@@ -3956,6 +4019,9 @@ def _build_argparser() -> argparse.ArgumentParser:
                    help="Record this scan in the local history DB.")
     p.add_argument("--no-color", action="store_true",
                    help="Disable ANSI colors.")
+    p.add_argument("-v", "--verbose", action="store_true",
+                   default=False,
+                   help="Show code snippets and typical fix examples.")
     p.add_argument("-q", "--quiet", action="store_true",
                    help="Only print summary.")
     p.add_argument("--version", action="version",
@@ -3966,7 +4032,28 @@ def _build_argparser() -> argparse.ArgumentParser:
 
 
 def _default_rules_path() -> Path:
-    return Path(__file__).resolve().parent / DEFAULT_RULES_FILENAME
+    """Search common locations for rules.json.
+
+    Covers: source checkout, pip install with --user or --system,
+    data-files installation under sys.prefix or sys.prefix/share,
+    current working directory, and per-user config.
+    """
+    here = Path(__file__).resolve().parent
+    candidates = [
+        here / DEFAULT_RULES_FILENAME,
+        here.parent.parent.parent / DEFAULT_RULES_FILENAME,
+        Path(sys.prefix) / DEFAULT_RULES_FILENAME,
+        Path(sys.prefix) / "share" / "codefence" / DEFAULT_RULES_FILENAME,
+        Path(sys.prefix) / "local" / DEFAULT_RULES_FILENAME,
+        Path(sys.prefix) / "local" / "share" / "codefence" / DEFAULT_RULES_FILENAME,
+        Path.cwd() / DEFAULT_RULES_FILENAME,
+        Path.home() / ".codefence" / DEFAULT_RULES_FILENAME,
+        Path.home() / ".config" / "codefence" / DEFAULT_RULES_FILENAME,
+    ]
+    for c in candidates:
+        if c.is_file():
+            return c
+    return candidates[0]
 
 
 def _collect_paths(paths: Sequence[str],
@@ -4323,8 +4410,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     fmt = cfg.format
     if fmt == "cli":
         use_color = _color_enabled(args.no_color)
-        out = report_cli(all_findings, len(targets), duration_ms,
-                         use_color, quiet=args.quiet)
+        if getattr(args, "staged", False):
+            out = report_cli_gate(all_findings, len(targets), duration_ms,
+                                  use_color)
+        else:
+            out = report_cli(all_findings, len(targets), duration_ms,
+                             use_color, quiet=args.quiet,
+                             verbose=getattr(args, "verbose", False))
     elif fmt == "json":
         out = report_json(all_findings, len(targets), duration_ms)
     elif fmt == "html":

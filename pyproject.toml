@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools==76.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "codefence"
-version = "1.0.0"
+version = "1.0.8"
 description = "A tiny offline policy gate for code. Check AI-generated code before it reaches Git."
-readme = "README.md"
+dynamic = ["readme"]
 requires-python = ">=3.10"
 license = {file = "LICENSE.txt"}
 authors = [
@@ -20,7 +20,6 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: Other/Proprietary License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -45,9 +44,6 @@ codefence = "codefence:main"
 [tool.setuptools]
 py-modules = ["codefence"]
 
-[tool.setuptools.package-data]
-codefence = ["rules.json"]
-
 [tool.setuptools.data-files]
 "." = [
     "rules.json",
@@ -70,3 +66,6 @@ codefence = ["rules.json"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md"], content-type = "text/markdown"}
