@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import hmac
 import html as _html
 import json
 import os
@@ -40,7 +41,7 @@ from typing import Callable, Iterable, Iterator, Sequence
 # =============================================================================
 
 TOOL_NAME = "codefence"
-TOOL_VERSION = "1.0.8"
+TOOL_VERSION = "1.0.9"
 RULES_SCHEMA = "codefence/rules-v1"
 DEFAULT_MAX_SIZE = 2 * 1024 * 1024
 DEFAULT_RULES_FILENAME = "rules.json"
@@ -2835,6 +2836,9 @@ BASELINE_DIR = ".codefence"
 BASELINE_FILE = "baseline.json"
 BASELINE_VERSION = "v1"
 CONFIG_FILE = "config.json"
+LICENSE_DIR = ".codefence"
+LICENSE_FILE = "license.key"
+LICENSE_ENV_VAR = "CODEFENCE_LICENSE_KEY"
 
 DEFAULT_CONFIG_CONTENT = {
     "schema": "codefence/config-v1",
@@ -3977,6 +3981,104 @@ def _matches_include(path: Path, includes: Sequence[str]) -> bool:
     return False
 
 
+_LICENSE_SECRET_PARTS = (
+    "codefence", "v1", "offline", "policy", "gate",
+    "2026", "hmac", "buyer", "identifier", "signature",
+)
+
+PRO_SUBCOMMANDS = frozenset({
+    "init", "init-hook", "uninstall-hook", "init-github",
+    "baseline", "policy", "history", "stats", "explain",
+})
+
+
+def _license_secret() -> bytes:
+    """Reconstruct the license signing secret at runtime.
+
+    The source is publicly readable. This is not a strong DRM
+    mechanism; it is a social contract backed by the license terms.
+    Splitting the material prevents accidental exposure in
+    grep/strings output and casual key generation.
+    """
+    material = "|".join(_LICENSE_SECRET_PARTS).encode("ascii")
+    return hashlib.sha256(material).digest()
+
+
+def _sign_license(identifier: str) -> str:
+    """Compute the signature for a license identifier."""
+    return hmac.new(
+        _license_secret(),
+        identifier.encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+
+
+def _validate_license(key_str: str) -> bool:
+    """Return True if key_str is 'identifier:signature' with a valid signature."""
+    if not isinstance(key_str, str) or ":" not in key_str:
+        return False
+    identifier, _, signature = key_str.rpartition(":")
+    identifier = identifier.strip()
+    signature = signature.strip().lower()
+    if not identifier or not signature:
+        return False
+    expected = _sign_license(identifier)
+    return hmac.compare_digest(expected, signature)
+
+
+def _license_path() -> Path:
+    return Path.home() / LICENSE_DIR / LICENSE_FILE
+
+
+def _read_license_key() -> str | None:
+    env = os.environ.get(LICENSE_ENV_VAR, "").strip()
+    if env:
+        return env
+    p = _license_path()
+    try:
+        if p.is_file():
+            return p.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return None
+
+
+def is_pro() -> bool:
+    """Return True if a valid Pro license is present.
+
+    Checks CODEFENCE_LICENSE_KEY env var first, then
+    ~/.codefence/license.key.
+    """
+    key = _read_license_key()
+    if not key:
+        return False
+    return _validate_license(key)
+
+
+def _pro_required_message(feature: str) -> str:
+    return (
+        f"error: '{feature}' requires a Pro license.\n"
+        f"\n"
+        f"  Free tier includes:\n"
+        f"    - All 30 rules (Python and JavaScript)\n"
+        f"    - CLI output (colored, compact, verbose)\n"
+        f"    - JSON output\n"
+        f"    - Configuration, include/exclude, severity filters\n"
+        f"\n"
+        f"  Pro tier ($12 one-time, crypto only) adds:\n"
+        f"    - Git pre-commit hook and --staged / --diff\n"
+        f"    - Baseline and policy-as-code\n"
+        f"    - SARIF and HTML output\n"
+        f"    - Local history and deterministic evidence\n"
+        f"\n"
+        f"  To activate Pro, place your license key in:\n"
+        f"    {_license_path()}\n"
+        f"  or set the {LICENSE_ENV_VAR} environment variable.\n"
+        f"\n"
+        f"  See README for pricing and purchase channels.\n"
+    )
+
+
 def _build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog=TOOL_NAME,
@@ -4245,6 +4347,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     sub_idx, sub = _find_subcommand(argv)
     if sub is not None:
         rest = argv[:sub_idx] + argv[sub_idx + 1:]
+        if sub in PRO_SUBCOMMANDS and not is_pro():
+            print(_pro_required_message(f"codefence {sub}"), file=sys.stderr)
+            return EXIT_USAGE
         if sub == "init-hook":
             return _cmd_init_hook(rest)
         if sub == "uninstall-hook":
@@ -4279,6 +4384,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     except SystemExit as e:
         print(str(e), file=sys.stderr)
         return EXIT_USAGE
+
+    # Pro-only flags
+    if not is_pro():
+        for flag_name in ("staged", "diff", "policy", "evidence", "history"):
+            if getattr(args, flag_name, None):
+                print(_pro_required_message(f"--{flag_name}"),
+                      file=sys.stderr)
+                return EXIT_USAGE
 
     rules_path = Path(cfg.rules_file) if cfg.rules_file else _default_rules_path()
     if not rules_path.is_file():
@@ -4408,6 +4521,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print()
 
     fmt = cfg.format
+    if fmt in ("html", "sarif") and not is_pro():
+        print(_pro_required_message(f"--format {fmt}"), file=sys.stderr)
+        return EXIT_USAGE
     if fmt == "cli":
         use_color = _color_enabled(args.no_color)
         if getattr(args, "staged", False):

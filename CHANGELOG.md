@@ -5,6 +5,37 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] — 2026-09-18
+
+### Added
+- `report_cli_gate`: three-state compact output for `--staged` and git hooks
+  - `commit blocked` when blocking findings are present
+  - `commit allowed (warning)` when only warn-action findings are present
+  - `commit passed` when clean
+- `--verbose` flag for direct scans to show code snippets and fix examples
+- `--quiet` short output: one-line header + one-line summary
+- Footer with tool version, offline note, and honest scope statement in HTML
+
+### Changed
+- CLI: replaced banner box with a single-line header
+- CLI: replaced bottom summary box with a one-line severity summary
+- CLI: snippet and fix diff are now opt-in via `--verbose` (default compact)
+- HTML: replaced 5-card dashboard with a horizontal severity summary line
+- HTML: severity card left border reduced from 4px to 2px
+- HTML: fix panels use neutral diff styling (`-` muted red, `+` muted green)
+  instead of a blue "after" block
+- HTML: card radius from 12px to 8px, softer shadows
+- HTML: typography and spacing tuned for readability
+
+### Fixed
+- HTML: multi-line diff rendering in fix panels (newlines were being collapsed)
+- Tests: SARIF test now reads tool version dynamically instead of hardcoding 1.0.0
+
+### Internal
+- Renamed test-only references from legacy product name to CodeFence
+
+[1.0.8]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.8
+
 ## [1.0.0] — 2026-09-16
 
 ### Added

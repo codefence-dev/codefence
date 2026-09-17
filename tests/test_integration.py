@@ -12,6 +12,17 @@ import pytest
 import codefence as cf
 
 
+# A valid Pro license for tests (generated at import time).
+_TEST_LICENSE_ID = "test-fixture"
+_TEST_LICENSE_KEY = f"{_TEST_LICENSE_ID}:{cf._sign_license(_TEST_LICENSE_ID)}"
+
+
+@pytest.fixture(autouse=True)
+def _pro_license(monkeypatch):
+    """Ensure Pro features are available in integration tests."""
+    monkeypatch.setenv("CODEFENCE_LICENSE_KEY", _TEST_LICENSE_KEY)
+
+
 GIT_ENV = {
     "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
     "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t",

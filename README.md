@@ -208,8 +208,8 @@ releases. No subscription. No support. No account.
 Payments are available in cryptocurrency only:
 
 - USDT (TRC20 or BEP20)
-- USDC
 - BTC
+- SOL
 - TRX
 - XRP
 

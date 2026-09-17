@@ -47,8 +47,8 @@ channels listed in `README.md`.
 Supported payment methods (subject to change):
 
 - USDT (TRC20 or BEP20)
-- USDC
 - BTC
+- SOL
 - TRX
 - XRP
 
