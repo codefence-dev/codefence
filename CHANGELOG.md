@@ -5,6 +5,29 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] — 2026-09-18
+
+### Added
+- Pro tier license system with offline HMAC-SHA256 verification
+- License source priority: `CODEFENCE_LICENSE_KEY` env var, then
+  `~/.codefence/license.key`
+- `tools/gen_license.py` seller-side key generation tool (not shipped)
+- README: Free vs Pro feature table with activation instructions
+
+### Changed
+- Pro features are now gated when no valid license is present:
+  - `--staged`, `--diff`, `--policy`, `--evidence`, `--history`
+  - `--format sarif`, `--format html`
+  - Subcommands: `init`, `init-hook`, `uninstall-hook`, `init-github`,
+    `baseline`, `policy`, `history`, `stats`, `explain`
+- Payment methods: removed USDC, added SOL
+- Free tier message shows clear upgrade path when Pro features are used
+
+### Fixed
+- Integration tests use an autouse Pro license fixture
+
+[1.0.9]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.9
+
 ## [1.0.8] — 2026-09-18
 
 ### Added
