@@ -4,6 +4,8 @@
 
 Offline. Zero dependencies. No account. No telemetry.
 
+Free: full 30-rule scanner. Pro ($19, one-time): git hook, baseline, policy, SARIF/HTML. [See pricing ↓](#payment-and-pricing)
+
 <img src="https://raw.githubusercontent.com/codefence-dev/codefence/main/docs/screenshots/hero_blocked.jpg" alt="CodeFence v1.0.11 blocking a git commit: 4 findings including hardcoded API keys, SQL injection, and command injection" width="500">
 
 ---
