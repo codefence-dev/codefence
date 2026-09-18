@@ -52,3 +52,5 @@ results.sarif
 !docs/index.html
 !docs/llms.txt
 !docs/.nojekyll
+!docs/sitemap.xml
+!docs/robots.txt
