@@ -5,6 +5,33 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] — 2026-09-18
+
+### Added
+- `docs/DETECTION_METHODOLOGY.md` — 607-line document with per-rule
+  samples, known false-positive scenarios, known false-negative
+  scenarios, and explicit scope limits (no dataflow, no taint
+  tracking, no interprocedural analysis). Ships inside the wheel and
+  sdist.
+- README: Free vs Pro section with activation instructions.
+- README: reference to DETECTION_METHODOLOGY.md next to the scope
+  disclaimers.
+
+### Changed
+- Tagline: `Check AI-written code before you commit it.` replaces
+  `A tiny offline policy gate for code.`
+- Secondary line: `Offline. Zero dependencies. No account. No
+  telemetry.`
+- Price: $12 → $19 (README, TERMS_OF_USE.md, license error message).
+- CLI `--help` and welcome screen show the new tagline.
+- PyPI summary now reflects the new tagline.
+
+### Notes
+- No behavior changes to detection logic. No new rules. No rule
+  removed. This is a documentation, positioning, and pricing release.
+
+[1.0.10]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.10
+
 ## [1.0.9] — 2026-09-18
 
 ### Added
