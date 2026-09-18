@@ -44,3 +44,6 @@ results.sarif
 
 # Whitelist screenshots directory for README
 !docs/screenshots/
+
+# Whitelist logo assets
+!docs/assets/
