@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools==76.1.0", "wheel"]
+requires = ["setuptools>=76.1.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "codefence"
-version = "1.0.10"
+version = "1.0.11"
 description = "A tiny offline policy gate for code. Check AI-generated code before it reaches Git."
 dynamic = ["readme"]
 requires-python = ">=3.10"
@@ -32,10 +32,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://codefence.dev"
-Source = "https://github.com/USERNAME/codefence"
-Issues = "https://github.com/USERNAME/codefence/issues"
-Changelog = "https://github.com/USERNAME/codefence/blob/main/CHANGELOG.md"
+Source = "https://github.com/codefence-dev/codefence"
+Issues = "https://github.com/codefence-dev/codefence/issues"
+Changelog = "https://github.com/codefence-dev/codefence/blob/main/CHANGELOG.md"
 
 [project.scripts]
 cfence = "codefence:main"

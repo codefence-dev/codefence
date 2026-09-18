@@ -5,6 +5,17 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] — 2026-09-18
+
+### Fixed
+
+- `pyproject.toml` project URLs pointed at a placeholder `USERNAME` and a
+  non-existent `codefence.dev` domain. They now point to the canonical
+  repository at `github.com/codefence-dev/codefence`.
+- `pyproject.toml` build requirement pinned `setuptools==76.1.0` exactly,
+  which could break builds in environments where that exact version is
+  unavailable. Relaxed to `setuptools>=76.1.0`.
+
 ## [1.0.10] — 2026-09-18
 
 ### Added
@@ -30,6 +41,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - No behavior changes to detection logic. No new rules. No rule
   removed. This is a documentation, positioning, and pricing release.
 
+[1.0.11]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.11
 [1.0.10]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.10
 
 ## [1.0.9] — 2026-09-18
