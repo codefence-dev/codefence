@@ -4,6 +4,8 @@
 
 Offline. Zero dependencies. No account. No telemetry.
 
+<img src="docs/screenshots/hero_blocked.jpg" alt="CodeFence v1.0.10 blocking a git commit: 4 findings including hardcoded API keys, SQL injection, and command injection" width="500">
+
 ---
 
 ## What it does
@@ -17,6 +19,8 @@ runs a curated set of rules and reports findings with:
 - code snippet
 - short remediation
 - typical before/after fix example
+
+<img src="docs/screenshots/cli_scan.jpg" alt="CodeFence CLI scan output: 6 critical, 1 high, 2 medium findings across R001-R012 with file:line:column locations and remediation hints" width="500">
 
 It is designed around the risks commonly encountered in AI-assisted
 development, but scans ordinary source code regardless of how it
@@ -88,6 +92,9 @@ Every commit is then gated automatically.
 **Explanation:**
 
     codefence explain R002
+
+<img src="docs/screenshots/cli_verbose.jpg" alt="CodeFence --verbose output: each finding includes the matched code snippet and a typical before/after fix example" width="500">
+
 ## The 30 rules
 
 Rules are shipped in rules.json (human-readable JSON). You can
@@ -229,6 +236,8 @@ into a gate.
 | `init-github` (GitHub Actions workflow) | - | Yes |
 | `init` (one-command setup) | - | Yes |
 
+<img src="docs/screenshots/report_light.jpg" alt="CodeFence HTML report (light theme): summary bar, per-finding cards with severity, snippet, copyable fix, and dark mode toggle" width="400">
+
 Free = detect. Pro = enforce.
 
 ### Activating Pro
@@ -327,6 +336,8 @@ A: No. Python, JavaScript (.js, .mjs, .cjs).
 A: Pattern-based scanners always produce some. Rules with lower
    confidence are flagged as such. You can disable any rule in
    rules.json or via policy overrides.
+
+<img src="docs/screenshots/cli_clean.jpg" alt="CodeFence clean scan: no findings, a green checkmark, and a single line confirming the file passed" width="400">
 
 **Q: Can I modify the source?**
 A: Yes, privately. See LICENSE_FAQ.md.
