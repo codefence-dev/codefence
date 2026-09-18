@@ -40,7 +40,7 @@ The Software is licensed, not sold. Your rights are defined in
 
 ## 3. Payment
 
-The Software is sold for a one-time fee of **USD 12** (or the
+The Software is sold for a one-time fee of **USD 19** (or the
 equivalent in a supported cryptocurrency) via the official sales
 channels listed in `README.md`.
 
@@ -112,7 +112,7 @@ To the maximum extent permitted by applicable law:
 
 - the Software is provided AS-IS, without warranty,
 - the total aggregate liability of the vendor is capped at the
-  amount you actually paid (USD 12),
+  amount you actually paid (USD 19),
 - the vendor is not liable for indirect, incidental, or
   consequential damages.
 

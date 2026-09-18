@@ -1,8 +1,8 @@
 # CodeFence
 
-**A tiny offline policy gate for code.**
+**Check AI-written code before you commit it.**
 
-Check AI-generated code before it reaches Git.
+Offline. Zero dependencies. No account. No telemetry.
 
 ---
 
@@ -45,6 +45,10 @@ was written.
 - Not a replacement for Semgrep, CodeQL, or professional review.
 - Not interprocedural. No dataflow, no taint analysis.
 - Not a guarantee. A clean scan does not mean the code is secure.
+
+For per-rule samples, known false-positive scenarios, false-negative
+scenarios, and the full detection methodology, see
+[`docs/DETECTION_METHODOLOGY.md`](docs/DETECTION_METHODOLOGY.md).
 
 ## Install
 
@@ -198,9 +202,59 @@ Every shipped file is hashed in CHECKSUMS.txt. To verify:
 Compare the output with the corresponding lines in CHECKSUMS.txt.
 If the hashes do not match, do not use the file.
 
+## Free vs Pro
+
+**Free gives you the full scanner. Pro gives you the workflow.**
+
+You are not paying for more detection. The Free tier includes all 30
+rules. You are paying for the automation layer that turns findings
+into a gate.
+
+| Feature | Free | Pro ($19) |
+|---|---|---|
+| All 30 rules (Python + JavaScript) | Yes | Yes |
+| CLI output (colored, compact, verbose) | Yes | Yes |
+| JSON output | Yes | Yes |
+| Configuration, include/exclude, severity filters | Yes | Yes |
+| Offline, zero dependencies, zero network | Yes | Yes |
+| `--format sarif` | - | Yes |
+| `--format html` | - | Yes |
+| Git pre-commit hook (`init-hook`) | - | Yes |
+| `--staged` / `--diff` | - | Yes |
+| `baseline` | - | Yes |
+| `--policy` + `policy validate` | - | Yes |
+| `--evidence` (deterministic hashes) | - | Yes |
+| `--history` + `history` / `stats` | - | Yes |
+| `explain RXXX` | - | Yes |
+| `init-github` (GitHub Actions workflow) | - | Yes |
+| `init` (one-command setup) | - | Yes |
+
+Free = detect. Pro = enforce.
+
+### Activating Pro
+
+After purchase you receive a license key of the form
+`identifier:signature`. Store it in one of two places.
+
+**Option 1 — File:**
+
+    mkdir -p ~/.codefence
+    echo 'YOUR-LICENSE-KEY' > ~/.codefence/license.key
+
+**Option 2 — Environment variable (recommended for CI):**
+
+    export CODEFENCE_LICENSE_KEY='YOUR-LICENSE-KEY'
+
+Verify activation:
+
+    cfence init-hook    # works only with a valid Pro license
+
+The license is verified locally with HMAC-SHA256. No network call, no
+telemetry, no activation server.
+
 ## Payment and pricing
 
-**$12 USD, one-time.**
+**$19 USD, one-time.**
 
 Includes the current major version (v1.x) and its maintenance
 releases. No subscription. No support. No account.

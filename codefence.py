@@ -41,7 +41,7 @@ from typing import Callable, Iterable, Iterator, Sequence
 # =============================================================================
 
 TOOL_NAME = "codefence"
-TOOL_VERSION = "1.0.9"
+TOOL_VERSION = "1.0.10"
 RULES_SCHEMA = "codefence/rules-v1"
 DEFAULT_MAX_SIZE = 2 * 1024 * 1024
 DEFAULT_RULES_FILENAME = "rules.json"
@@ -4065,7 +4065,7 @@ def _pro_required_message(feature: str) -> str:
         f"    - JSON output\n"
         f"    - Configuration, include/exclude, severity filters\n"
         f"\n"
-        f"  Pro tier ($12 one-time, crypto only) adds:\n"
+        f"  Pro tier ($19 one-time, crypto only) adds:\n"
         f"    - Git pre-commit hook and --staged / --diff\n"
         f"    - Baseline and policy-as-code\n"
         f"    - SARIF and HTML output\n"
@@ -4082,7 +4082,7 @@ def _pro_required_message(feature: str) -> str:
 def _build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog=TOOL_NAME,
-        description="Offline AI code sanity check (pattern-based).",
+        description="Check AI-written code before you commit it.",
         add_help=False,
     )
     p.add_argument("-h", "--help", action="store_true", dest="show_help",
@@ -4202,11 +4202,11 @@ def _print_welcome() -> None:
     out.append(_box_row(
         f"   {c('CodeFence')}  {c(chr(0x00b7), Severity.LOW)}  "
         f"v{TOOL_VERSION}", W))
-    out.append(_box_row("   Offline AI code sanity check", W))
+    out.append(_box_row("   Check AI-written code before you commit it.", W))
     out.append(_box_row("", W))
     out.append(_box_bot(W))
     out.append("")
-    out.append("  Pattern-based. Zero network calls. Python + JavaScript.")
+    out.append("  Offline. Zero dependencies. No account. No telemetry.")
     out.append("")
     out.append(f"  {c('QUICK START', Severity.LOW)}")
     out.append(f"    {TOOL_NAME}.py <file-or-directory>")
@@ -4248,8 +4248,10 @@ def _print_help() -> None:
     blocks: list[str] = []
     blocks.append(f"{h('CodeFence')}  "
                   f"{s(chr(0x00b7))}  v{TOOL_VERSION}")
-    blocks.append("Offline AI code sanity check. Pattern-based, "
-                  "not a security audit.")
+    blocks.append("Check AI-written code before you commit it.")
+    blocks.append("Offline. Zero dependencies. No account. No telemetry.")
+    blocks.append("")
+    blocks.append("This is a pattern-based sanity check, not a security audit.")
     blocks.append("")
     blocks.append(h("USAGE"))
     blocks.append(f"    cfence [OPTIONS] PATH...")

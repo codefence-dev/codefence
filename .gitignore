@@ -1,7 +1,9 @@
 # Internal documentation (not for public repo)
 spec.md
-docs/
 marketing/
+# Allow detection methodology (shipped in product)
+docs/*
+!docs/DETECTION_METHODOLOGY.md
 
 # Internal tooling
 benchmarks/
