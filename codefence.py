@@ -4055,27 +4055,40 @@ def is_pro() -> bool:
     return _validate_license(key)
 
 
+_PRO_FEATURE_DESCRIPTIONS = {
+    "codefence init-hook": "Install a Git pre-commit hook that runs CodeFence on staged changes.",
+    "codefence baseline": "Snapshot current findings so future scans show only what changed.",
+    "codefence policy": "Validate a policy-as-code file for use with --policy.",
+    "codefence explain": "Show a detailed explanation of any rule by ID.",
+    "codefence init": "One-command setup of CodeFence in a repository.",
+    "codefence init-github": "Generate a GitHub Actions workflow that runs CodeFence in CI.",
+    "codefence history": "Show scan history from the local SQLite store.",
+    "codefence stats": "Show aggregate statistics from local scan history.",
+    "--staged": "Scan only files staged for the next commit.",
+    "--diff": "Report only findings that are new since the baseline.",
+    "--policy": "Apply a policy-as-code file to decide pass, warn, or block.",
+    "--evidence": "Emit deterministic hashes for reproducible audit trails.",
+    "--history": "Record each scan in a local SQLite history.",
+    "--format html": "Produce a standalone HTML report with light/dark themes.",
+    "--format sarif": "Produce SARIF 2.1.0 output for GitHub code scanning.",
+}
+
+
 def _pro_required_message(feature: str) -> str:
+    desc = _PRO_FEATURE_DESCRIPTIONS.get(feature)
+    head = f"  {desc}\n\n" if desc else ""
     return (
         f"error: '{feature}' requires a Pro license.\n"
         f"\n"
-        f"  Free tier includes:\n"
-        f"    - All 30 rules (Python and JavaScript)\n"
-        f"    - CLI output (colored, compact, verbose)\n"
-        f"    - JSON output\n"
-        f"    - Configuration, include/exclude, severity filters\n"
+        f"{head}"
+        f"  Free scans code. Pro automates the workflow.\n"
         f"\n"
-        f"  Pro tier ($19 one-time, crypto only) adds:\n"
-        f"    - Git pre-commit hook and --staged / --diff\n"
-        f"    - Baseline and policy-as-code\n"
-        f"    - SARIF and HTML output\n"
-        f"    - Local history and deterministic evidence\n"
+        f"  Unlock Pro - $19 one-time:\n"
+        f"    https://github.com/codefence-dev/codefence#payment-and-pricing\n"
         f"\n"
-        f"  To activate Pro, place your license key in:\n"
+        f"  Already have a license? Place it in:\n"
         f"    {_license_path()}\n"
         f"  or set the {LICENSE_ENV_VAR} environment variable.\n"
-        f"\n"
-        f"  See README for pricing and purchase channels.\n"
     )
 
 
