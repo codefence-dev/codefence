@@ -5,6 +5,26 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.12] — 2026-09-18
+
+### Added
+
+- Getly license support. Pro keys of the form
+  `GETLY-XXXX-XXXX-XXXX-XXXX` are now recognized.
+- Offline-first validation: the first Pro activation calls Getly's
+  public endpoint once, then caches the result at
+  `~/.codefence/getly.json`. After that, CodeFence runs fully offline.
+- Silent background refresh when a network is available. A failed
+  refresh never disables Pro — the license is permanent.
+- README: new "Updates" section documenting free v1.x upgrades.
+- README: "Activating Pro" section rewritten for Getly keys.
+
+### Changed
+
+- README "Security and privacy" now distinguishes Free tier (no
+  network calls) from Pro activation (one call, once, per machine).
+- Legacy `identifier:signature` HMAC keys are still accepted.
+
 ## [1.0.11] — 2026-09-18
 
 ### Fixed
@@ -41,6 +61,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - No behavior changes to detection logic. No new rules. No rule
   removed. This is a documentation, positioning, and pricing release.
 
+[1.0.12]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.12
 [1.0.11]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.11
 [1.0.10]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.10
 

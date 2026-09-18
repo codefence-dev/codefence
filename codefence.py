@@ -43,7 +43,7 @@ from typing import Callable, Iterable, Iterator, Sequence
 # =============================================================================
 
 TOOL_NAME = "codefence"
-TOOL_VERSION = "1.0.11"
+TOOL_VERSION = "1.0.12"
 RULES_SCHEMA = "codefence/rules-v1"
 DEFAULT_MAX_SIZE = 2 * 1024 * 1024
 DEFAULT_RULES_FILENAME = "rules.json"

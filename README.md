@@ -191,16 +191,44 @@ Query history:
     codefence stats
 ## Security and privacy
 
-- Zero network calls. Zero.
+Free tier — no network calls at runtime:
+
+- Zero network calls during scans.
 - Zero telemetry.
 - Zero data upload.
-- Writes only to --output, and optionally to:
-    ~/.cache/codefence/            (only when --cache is set)
-    ~/.local/share/codefence/      (only when --history is set)
-- Never writes to the files you scan.
-- Never executes the code you scan.
+
+Pro activation — one call, once, per machine:
+
+- The first time you use a Pro feature, CodeFence validates your
+  license key against Getly's public endpoint.
+- No account, no email, no tracking, no device fingerprint.
+- After the first validation, the result is cached locally at
+  `~/.codefence/getly.json`.
+- From that point on, CodeFence runs fully offline. The license is
+  permanent. Silent background refreshes are attempted when a network
+  is available, but a missing network never disables Pro.
+
+Files CodeFence writes:
+
+- `--output` target, when specified
+- `~/.cache/codefence/`       (only when `--cache` is set)
+- `~/.local/share/codefence/` (only when `--history` is set)
+- `~/.codefence/getly.json`   (only for Getly Pro licenses)
+
+CodeFence never writes to the files you scan, and never executes
+the code you scan.
 
 The full threat model is documented in SECURITY.md.
+
+## Updates
+
+Free updates for all v1.x releases:
+
+    pip install --upgrade codefence
+
+Your license key keeps working across updates. No re-activation needed.
+If a future v2.0 introduces a new major license, that will be stated
+clearly before it ships.
 
 ## Verifying the download
 
@@ -244,17 +272,24 @@ Free = detect. Pro = enforce.
 
 ### Activating Pro
 
-After purchase you receive a license key of the form
-`identifier:signature`. Store it in one of two places.
+After purchase you receive a unique license key of the form
+`GETLY-XXXX-XXXX-XXXX-XXXX`. Store it in one of two places.
 
 **Option 1 — File:**
 
     mkdir -p ~/.codefence
-    echo 'YOUR-LICENSE-KEY' > ~/.codefence/license.key
+    echo 'GETLY-XXXX-XXXX-XXXX-XXXX' > ~/.codefence/license.key
 
 **Option 2 — Environment variable (recommended for CI):**
 
-    export CODEFENCE_LICENSE_KEY='YOUR-LICENSE-KEY'
+    export CODEFENCE_LICENSE_KEY='GETLY-XXXX-XXXX-XXXX-XXXX'
+
+The first time a Pro feature is used, CodeFence validates the key
+against Getly's public endpoint. The result is cached locally at
+`~/.codefence/getly.json`. From that point on, CodeFence runs fully
+offline. The license is permanent and needs no re-activation.
+
+Legacy `identifier:signature` keys are still accepted if you have one.
 
 Verify activation:
 
