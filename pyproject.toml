@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codefence"
-version = "1.0.12"
-description = "A tiny offline policy gate for code. Check AI-generated code before it reaches Git."
+version = "1.0.13"
+description = "Offline pre-commit security scanner for AI-written Python and JavaScript code. 30 rules, 29 CWE IDs."
 dynamic = ["readme"]
 requires-python = ">=3.10"
 license = {file = "LICENSE.txt"}
@@ -14,7 +14,9 @@ authors = [
 ]
 keywords = [
     "security", "static-analysis", "pre-commit", "git-hook",
-    "ai-generated-code", "sast", "sarif", "offline", "policy",
+    "ai-generated-code", "ai-code", "code-review", "devtools",
+    "sast", "sarif", "offline", "cwe", "python", "javascript",
+    "security-scanner",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -28,7 +30,10 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Version Control :: Git",
     "Topic :: Security",
+    "Topic :: Utilities",
+    "Programming Language :: JavaScript",
 ]
 
 [project.urls]

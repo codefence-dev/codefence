@@ -5,6 +5,20 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] — 2026-09-19
+
+### Changed
+
+- PyPI description now leads with the product's purpose for
+  discoverability: "Offline pre-commit security scanner for
+  AI-written Python and JavaScript code."
+- PyPI keywords expanded from 9 to 15, adding `cwe`, `ai-code`,
+  `code-review`, `devtools`, `python`, `javascript`, and
+  `security-scanner`.
+- PyPI classifiers now include `Programming Language :: JavaScript`,
+  `Topic :: Software Development :: Version Control :: Git`, and
+  `Topic :: Utilities`.
+
 ## [1.0.12] — 2026-09-18
 
 ### Added
@@ -61,6 +75,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - No behavior changes to detection logic. No new rules. No rule
   removed. This is a documentation, positioning, and pricing release.
 
+[1.0.13]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.13
 [1.0.12]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.12
 [1.0.11]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.11
 [1.0.10]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.10
