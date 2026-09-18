@@ -54,3 +54,4 @@ results.sarif
 !docs/.nojekyll
 !docs/sitemap.xml
 !docs/robots.txt
+!docs/google*.html
