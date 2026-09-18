@@ -47,3 +47,8 @@ results.sarif
 
 # Whitelist logo assets
 !docs/assets/
+
+# Whitelist landing page and llms.txt
+!docs/index.html
+!docs/llms.txt
+!docs/.nojekyll

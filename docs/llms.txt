@@ -1,0 +1,71 @@
+# CodeFence
+
+> Offline pre-commit security scanner for AI-written Python and JavaScript code.
+
+CodeFence is a single-file, zero-dependency Python CLI that scans source
+code for dangerous patterns commonly introduced by AI coding assistants.
+It runs before you commit.
+
+## Key facts
+
+- 30 rules across Python and JavaScript
+- Mapped to 29 CWE identifiers
+- Four output formats: CLI (color), JSON, SARIF 2.1.0, HTML report
+- Works fully offline (Free tier has zero network calls)
+- Zero third-party dependencies (stdlib only)
+- ~150 KB total, ~4,500 lines of Python
+- Python 3.10 or newer
+- Install: `pip install codefence`
+- 88 tests passing
+
+## Free vs Pro
+
+Free tier includes:
+- All 30 rules (Python + JavaScript)
+- CLI output (colored, compact, verbose)
+- JSON output
+- Configuration, include/exclude, severity filters
+
+Pro tier ($19 one-time) adds:
+- Git pre-commit hook (`init-hook`)
+- `--staged` / `--diff` scanning
+- Baseline snapshots
+- Policy-as-code
+- SARIF 2.1.0 output
+- HTML report with light/dark themes
+- Local SQLite history and stats
+- Deterministic evidence hashes
+- `explain RXXX` for per-rule details
+- `init` and `init-github` one-command setup
+- Free updates for all v1.x releases
+
+## How Pro activation works
+
+1. After purchase you receive a unique license key of the form `GETLY-XXXX-XXXX-XXXX-XXXX`.
+2. The first time you use a Pro feature, CodeFence validates the key once against Getly's public endpoint.
+3. The result is cached locally at `~/.codefence/getly.json`.
+4. After that first validation, CodeFence runs fully offline. The license is permanent.
+5. No account, no email, no tracking, no device fingerprint.
+
+## What CodeFence is NOT
+
+- Not a security audit
+- Not a replacement for Semgrep, CodeQL, or professional review
+- Not an autofixer
+- Not interprocedural; no dataflow or taint analysis
+- A clean scan does not mean the code is secure
+
+## Pricing
+
+$19 USD, one-time. No subscription.
+
+Accepted payment: USDT (BEP20/TRC20), BTC, SOL, TRX, XRP, TON.
+
+## Links
+
+- Homepage: https://codefence-dev.github.io/codefence/
+- GitHub: https://github.com/codefence-dev/codefence
+- PyPI: https://pypi.org/project/codefence/
+- Store: https://www.getly.store/store/codefence-dev
+- Detection methodology: https://github.com/codefence-dev/codefence/blob/main/docs/DETECTION_METHODOLOGY.md
+- Changelog: https://github.com/codefence-dev/codefence/blob/main/CHANGELOG.md

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CodeFence — Offline pre-commit security scanner for AI-written code</title>
+<meta name="description" content="Offline pre-commit security scanner for AI-written Python and JavaScript code. 30 rules, 29 CWE IDs, zero dependencies. Free tier includes all rules. Pro is $19 one-time.">
+<meta name="keywords" content="offline pre-commit security scanner, AI code security, Python security scanner, JavaScript security scanner, CWE scanner, static analysis, SAST, pre-commit hook">
+<meta property="og:title" content="CodeFence — Offline pre-commit scanner for AI-written code">
+<meta property="og:description" content="30 rules. 29 CWE IDs. Python + JavaScript. Free tier includes all rules. Pro is $19 one-time.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://codefence-dev.github.io/codefence/">
+<link rel="canonical" href="https://codefence-dev.github.io/codefence/">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f172a;color:#e2e8f0;line-height:1.6;font-size:16px}
+.wrap{max-width:780px;margin:0 auto;padding:56px 24px}
+h1{font-size:2.2rem;line-height:1.2;margin-bottom:12px;color:#fff}
+h2{font-size:1.3rem;margin:48px 0 16px;color:#fff;border-bottom:1px solid #334155;padding-bottom:8px}
+p{margin-bottom:16px;color:#cbd5e1}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;overflow-x:auto;font-size:0.9rem;color:#e2e8f0}
+.pill{display:inline-block;background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:999px;padding:4px 12px;font-size:0.8rem;margin-right:8px;margin-bottom:8px}
+ul{list-style:none}
+li{padding-left:24px;position:relative;margin-bottom:8px;color:#cbd5e1}
+li::before{content:"+";position:absolute;left:0;color:#22d3ee;font-weight:bold}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:0.95rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #334155}
+th{color:#94a3b8;font-weight:normal;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em}
+td code{color:#22d3ee;font-size:0.85rem}
+.cta{display:inline-block;background:#22d3ee;color:#0f172a;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;margin-top:8px}
+.cta:hover{background:#67e8f9}
+.links{margin-top:16px}
+.links a{color:#22d3ee;text-decoration:none;margin-right:20px;font-size:0.9rem}
+.links a:hover{text-decoration:underline}
+hr{border:none;border-top:1px solid #334155;margin:48px 0}
+.foot{color:#64748b;font-size:0.85rem;margin-top:48px}
+.foot a{color:#64748b}
+details{margin-bottom:12px;padding:12px 16px;background:#1e293b;border-radius:8px;border:1px solid #334155}
+summary{cursor:pointer;font-weight:600;color:#e2e8f0}
+details p{margin-top:12px;margin-bottom:0;color:#cbd5e1}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CodeFence",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows, Android (Termux)",
+  "programmingLanguage": ["Python", "JavaScript"],
+  "description": "Offline pre-commit security scanner for AI-written Python and JavaScript code. 30 rules, 29 CWE IDs, zero dependencies.",
+  "offers": {
+    "@type": "Offer",
+    "price": "19.00",
+    "priceCurrency": "USD",
+    "url": "https://www.getly.store/product/codefence-pro-offline-pre-commit-gate-for-ai-written-code"
+  },
+  "softwareVersion": "1.0.13",
+  "downloadUrl": "https://pypi.org/project/codefence/",
+  "codeRepository": "https://github.com/codefence-dev/codefence",
+  "license": "https://github.com/codefence-dev/codefence/blob/main/LICENSE.txt"
+}
+</script>
+</head>
+<body>
+<div class="wrap">
+
+<h1>CodeFence</h1>
+<p><strong style="color:#22d3ee">Offline pre-commit security scanner for AI-written Python and JavaScript code.</strong></p>
+<p>Check AI-written code before you commit it. 30 rules, 29 CWE IDs, zero dependencies, no account, no telemetry.</p>
+
+<span class="pill">Offline</span>
+<span class="pill">Zero dependencies</span>
+<span class="pill">No account</span>
+<span class="pill">No telemetry</span>
+<span class="pill">Python 3.10+</span>
+
+<h2>Install</h2>
+<pre>pip install codefence</pre>
+
+<h2>What it scans</h2>
+<p>CodeFence runs 30 rules across Python and JavaScript, mapped to 29 CWE identifiers. It targets the risky patterns that AI coding assistants commonly produce:</p>
+<ul>
+<li>Hardcoded API keys and secrets</li>
+<li>SQL injection via string concatenation</li>
+<li>Command injection with shell=True</li>
+<li>eval() / exec() on untrusted input</li>
+<li>Insecure random for security tokens</li>
+<li>Broad except: pass</li>
+<li>And 24 more rules</li>
+</ul>
+
+<h2>Free vs Pro</h2>
+<table>
+<tr><th>Feature</th><th>Free</th><th>Pro ($19)</th></tr>
+<tr><td>All 30 rules (Python + JavaScript)</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>CLI output (colored, compact, verbose)</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>JSON output</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Configuration, include/exclude, severity filters</td><td>Yes</td><td>Yes</td></tr>
+<tr><td><code>--format sarif</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>--format html</code></td><td>-</td><td>Yes</td></tr>
+<tr><td>Git pre-commit hook (<code>init-hook</code>)</td><td>-</td><td>Yes</td></tr>
+<tr><td><code>--staged</code> / <code>--diff</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>baseline</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>--policy</code> + <code>policy validate</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>--evidence</code> (deterministic hashes)</td><td>-</td><td>Yes</td></tr>
+<tr><td><code>--history</code> + <code>history</code> / <code>stats</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>explain RXXX</code></td><td>-</td><td>Yes</td></tr>
+<tr><td><code>init-github</code> (GitHub Actions workflow)</td><td>-</td><td>Yes</td></tr>
+<tr><td><code>init</code> (one-command setup)</td><td>-</td><td>Yes</td></tr>
+</table>
+
+<h2>Buy Pro — $19 one-time</h2>
+<p>One-time payment. No subscription. Crypto only: USDT (BEP20/TRC20), BTC, SOL, TRX, XRP, TON.</p>
+<a class="cta" href="https://www.getly.store/product/codefence-pro-offline-pre-commit-gate-for-ai-written-code">Buy CodeFence Pro</a>
+
+<h2>How Pro activation works</h2>
+<ul>
+<li>After purchase you receive a unique license key</li>
+<li>First Pro feature use validates the key once against Getly's public endpoint</li>
+<li>Result is cached locally at <code>~/.codefence/getly.json</code></li>
+<li>After that, CodeFence runs fully offline. The license is permanent</li>
+<li>No account, no email, no tracking, no device fingerprint</li>
+</ul>
+
+<h2>Proof</h2>
+<ul>
+<li>88 tests passing</li>
+<li>~4,500 lines of Python, stdlib only</li>
+<li>v1.0.13, released 2026-09-19</li>
+<li>Source readable by buyer</li>
+<li>Detection methodology documented in the repository</li>
+</ul>
+
+<h2>Frequently asked</h2>
+<details>
+<summary>Does CodeFence phone home?</summary>
+<p>Free tier: zero network calls during scans. Pro activation: exactly one call, once per machine, to validate the license. After that, CodeFence runs fully offline forever.</p>
+</details>
+<details>
+<summary>Do I need an account?</summary>
+<p>No. No account, no email, no signup.</p>
+</details>
+<details>
+<summary>Is there a refund policy?</summary>
+<p>Getly offers a 30-day money-back window on every product page. Buyers can request a refund directly through Getly.</p>
+</details>
+<details>
+<summary>What if I lose my license key?</summary>
+<p>The license key is the sole proof of purchase. Back it up as you would an SSH key or password. CodeFence has no recovery channel.</p>
+</details>
+<details>
+<summary>Is this a security audit?</summary>
+<p>No. CodeFence is a pattern-based sanity check for selected dangerous patterns. It is not a replacement for Semgrep, CodeQL, or professional review.</p>
+</details>
+<details>
+<summary>How many devices can I use one license on?</summary>
+<p>One individual on up to 3 devices they own or control.</p>
+</details>
+
+<hr>
+
+<h2>Links</h2>
+<div class="links">
+<a href="https://github.com/codefence-dev/codefence">GitHub</a>
+<a href="https://pypi.org/project/codefence/">PyPI</a>
+<a href="https://www.getly.store/store/codefence-dev">Getly store</a>
+<a href="https://github.com/codefence-dev/codefence/blob/main/CHANGELOG.md">Changelog</a>
+<a href="https://github.com/codefence-dev/codefence/blob/main/docs/DETECTION_METHODOLOGY.md">Detection methodology</a>
+</div>
+
+<p class="foot">
+CodeFence is built and maintained by an independent developer. No tracking, no analytics, no cookies on this page.
+</p>
+
+</div>
+</body>
+</html>
