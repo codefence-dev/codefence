@@ -41,3 +41,6 @@ results.sarif
 # Local environment
 .env
 .env.local
+
+# Whitelist screenshots directory for README
+!docs/screenshots/
