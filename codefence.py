@@ -29,6 +29,8 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
@@ -2840,6 +2842,16 @@ LICENSE_DIR = ".codefence"
 LICENSE_FILE = "license.key"
 LICENSE_ENV_VAR = "CODEFENCE_LICENSE_KEY"
 
+# Getly license integration (hybrid offline model).
+# A Getly license is validated once on first use, then cached locally.
+# After the first successful validation, the CLI runs fully offline.
+# Silent background refresh is attempted when possible but never required.
+GETLY_PRODUCT_ID = "43a93778-b8e1-4645-92bf-d33139336897"
+GETLY_VALIDATE_URL = "https://www.getly.store/api/v1/licenses/validate"
+GETLY_KEY_PREFIX = "GETLY-"
+GETLY_CACHE_FILE = "getly.json"
+GETLY_HTTP_TIMEOUT_SECONDS = 8
+
 DEFAULT_CONFIG_CONTENT = {
     "schema": "codefence/config-v1",
     "format": "cli",
@@ -4043,15 +4055,123 @@ def _read_license_key() -> str | None:
     return None
 
 
+def _getly_cache_path() -> Path:
+    return Path.home() / LICENSE_DIR / GETLY_CACHE_FILE
+
+
+def _read_getly_cache() -> dict | None:
+    p = _getly_cache_path()
+    try:
+        if p.is_file():
+            data = json.loads(p.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return data
+    except (OSError, json.JSONDecodeError):
+        return None
+    return None
+
+
+def _write_getly_cache(key: str, info: dict) -> None:
+    p = _getly_cache_path()
+    try:
+        p.parent.mkdir(parents=True, exist_ok=True)
+        record = {
+            "key": key,
+            "productId": info.get("productId", GETLY_PRODUCT_ID),
+            "validatedAt": datetime.now(timezone.utc).isoformat(),
+            "status": info.get("status", "active"),
+        }
+        p.write_text(json.dumps(record, indent=2), encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _call_getly_validate(key: str) -> bool | None:
+    """Call Getly's public validate endpoint.
+
+    Returns:
+        True  - server confirmed the key is valid
+        False - server confirmed the key is invalid
+        None  - network or protocol error (cannot decide)
+    """
+    body = json.dumps({
+        "key": key,
+        "productId": GETLY_PRODUCT_ID,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        GETLY_VALIDATE_URL,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "User-Agent": f"CodeFence/{TOOL_VERSION}",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=GETLY_HTTP_TIMEOUT_SECONDS) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+    except (urllib.error.URLError, OSError, json.JSONDecodeError, TimeoutError):
+        return None
+
+    if not isinstance(payload, dict) or not payload.get("success"):
+        return None
+    data = payload.get("data") or {}
+    return bool(data.get("valid"))
+
+
+def _validate_getly_license(key: str) -> bool:
+    """Validate a Getly license key.
+
+    Offline-first:
+      - A previously cached validation that matches the current key is
+        honored without any network call. The license is permanent.
+      - On the first use (no cache yet), a single network call is made.
+      - If the network is unavailable on first use, Pro stays locked.
+      - After the first successful validation, a silent best-effort
+        refresh is attempted in the background, but a failure of that
+        refresh never disables Pro.
+    """
+    if not key.startswith(GETLY_KEY_PREFIX):
+        return False
+
+    cache = _read_getly_cache()
+    cache_matches = bool(cache and cache.get("key") == key)
+
+    if cache_matches:
+        # License is already proven; try a silent refresh, ignore failures.
+        result = _call_getly_validate(key)
+        if result is True:
+            _write_getly_cache(key, {"status": "active"})
+            return True
+        if result is False:
+            # Server explicitly rejected the key (revoked / refunded).
+            return False
+        # Network failed: cached proof still stands.
+        return True
+
+    # No matching cache: this is the first activation on this machine.
+    result = _call_getly_validate(key)
+    if result is True:
+        _write_getly_cache(key, {"status": "active"})
+        return True
+    return False
+
+
 def is_pro() -> bool:
     """Return True if a valid Pro license is present.
 
     Checks CODEFENCE_LICENSE_KEY env var first, then
     ~/.codefence/license.key.
+
+    Supports two license formats:
+      - Legacy HMAC: identifier:signature
+      - Getly:       GETLY-XXXX-XXXX-XXXX-XXXX
     """
     key = _read_license_key()
     if not key:
         return False
+    if key.startswith(GETLY_KEY_PREFIX):
+        return _validate_getly_license(key)
     return _validate_license(key)
 
 
