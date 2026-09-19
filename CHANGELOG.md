@@ -5,6 +5,42 @@ All notable changes to CodeFence.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.14] — 2026-09-19
+
+### Added
+
+- `.pre-commit-hooks.yaml` for the pre-commit framework. Install
+  with a `repo:` + `rev: v1.0.14` block in `.pre-commit-config.yaml`.
+- README section "Using with pre-commit" with copy-paste config.
+- README section "About this project" describing the independent
+  single-developer status.
+- README section "Getting help" replacing the previous "Support".
+- `--version` now reports license status:
+  Free (no key), Pro (Getly), Free (key present, not validated),
+  Pro (legacy HMAC), Free (invalid key).
+
+### Changed
+
+- Getly license validation now uses a 30-day cache TTL. After the
+  first successful activation, no network call is made for 30 days.
+  This makes the "runs fully offline" claim accurate at the code
+  level, not just at the README level.
+- README "Security and privacy", "Activating Pro", "Updates", FAQ
+  answers, and Free vs Pro table now consistently describe the
+  one-time Getly validation and the silent 30-day refresh.
+- TERMS_OF_USE.md, NOTICE.md, LICENSE_FAQ.md, and docs/llms.txt
+  reflect the same network model.
+- Help text and HTML report footer no longer claim "zero network
+  calls" unconditionally; they now say "zero telemetry" and
+  "Free tier runs fully offline".
+
+### Fixed
+
+- README no longer mentions a non-existent issue tracker.
+- Release v1.0.0 body on GitHub updated to reflect current price
+  ($19) and current test count (88).
+- Stale `CodeFence-v1.0.0.zip` and `LESSONS.md` removed from main.
+
 ## [1.0.13] — 2026-09-19
 
 ### Changed
@@ -75,6 +111,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - No behavior changes to detection logic. No new rules. No rule
   removed. This is a documentation, positioning, and pricing release.
 
+[1.0.14]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.14
 [1.0.13]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.13
 [1.0.12]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.12
 [1.0.11]: https://github.com/codefence-dev/codefence/releases/tag/v1.0.11

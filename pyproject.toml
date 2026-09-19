@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codefence"
-version = "1.0.13"
+version = "1.0.14"
 description = "Offline pre-commit security scanner for AI-written Python and JavaScript code. 30 rules, 29 CWE IDs."
 dynamic = ["readme"]
 requires-python = ">=3.10"

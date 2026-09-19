@@ -6,7 +6,7 @@ Check AI-written code before you commit it. 30 rules, 29 CWE IDs, zero dependenc
 
 Free: full 30-rule scanner. Pro ($19, one-time): git hook, baseline, policy, SARIF/HTML. [See pricing ↓](#payment-and-pricing)
 
-<img src="https://raw.githubusercontent.com/codefence-dev/codefence/main/docs/screenshots/hero_blocked.jpg" alt="CodeFence v1.0.13 blocking a git commit: 4 findings including hardcoded API keys, SQL injection, and command injection" width="500">
+<img src="https://raw.githubusercontent.com/codefence-dev/codefence/main/docs/screenshots/hero_blocked.jpg" alt="CodeFence v1.0.14 blocking a git commit: 4 findings including hardcoded API keys, SQL injection, and command injection" width="500">
 
 ---
 
@@ -98,6 +98,27 @@ Every commit is then gated automatically.
     codefence explain R002
 
 <img src="https://raw.githubusercontent.com/codefence-dev/codefence/main/docs/screenshots/cli_verbose.jpg" alt="CodeFence --verbose output: each finding includes the matched code snippet and a typical before/after fix example" width="500">
+
+## Using with pre-commit
+
+CodeFence integrates with the [pre-commit](https://pre-commit.com/) framework.
+
+Add this to your `.pre-commit-config.yaml`:
+
+    repos:
+      - repo: https://github.com/codefence-dev/codefence
+        rev: v1.0.14
+        hooks:
+          - id: codefence
+
+Then run:
+
+    pre-commit install
+
+The hook runs on every commit against staged Python and JavaScript files.
+A finding causes the commit to fail. The Free tier covers the basic scan.
+Pro features (baseline, --diff, policy, SARIF, HTML) are available when a
+valid license is present.
 
 ## The 30 rules
 
@@ -207,7 +228,7 @@ Pro activation — one call, once, per machine:
 - After the first validation, the result is cached locally at
   `~/.codefence/getly.json`.
 - From that point on, CodeFence runs fully offline. The license is
-  permanent. Silent background refreshes are attempted when a network
+  permanent. A silent refresh is attempted every 30 days if a network
   is available, but a missing network never disables Pro.
 
 Files CodeFence writes:
@@ -255,7 +276,10 @@ into a gate.
 | CLI output (colored, compact, verbose) | Yes | Yes |
 | JSON output | Yes | Yes |
 | Configuration, include/exclude, severity filters | Yes | Yes |
-| Offline, zero dependencies, zero network | Yes | Yes |
+| Zero dependencies | Yes | Yes |
+| No telemetry | Yes | Yes |
+| Free tier: zero network calls during scans | Yes | - |
+| Pro activation: one network call, once per machine | - | Yes |
 | `--format sarif` | - | Yes |
 | `--format html` | - | Yes |
 | Git pre-commit hook (`init-hook`) | - | Yes |
@@ -295,7 +319,7 @@ Legacy `identifier:signature` keys are still accepted if you have one.
 
 Verify activation:
 
-    codefence init-hook    # works only with a valid Pro license
+    codefence --version    # reports "Pro" when a valid license is present
 
 The first Getly validation requires a network call. Every subsequent
 run is fully offline. Legacy `identifier:signature` keys are verified
@@ -342,15 +366,16 @@ For the full legal terms, see LICENSE.txt and TERMS_OF_USE.md.
 **Governing law:** England and Wales. Mandatory consumer
 protections in your country of residence remain fully applicable.
 
-## Support
+## About this project
 
-There is no email, no chat, and no guaranteed support.
+CodeFence is built and maintained by one independent developer, with no company and no outside funding.
+The source is readable, the tests are public, and the documentation is explicit about what the tool does and does not do.
+The free tier includes the full scanner — all 30 rules.
 
-- Bug reports and feature requests may be opened as GitHub issues.
-- Issues may not receive a reply.
-- There is no release schedule and no bug-fix commitment.
+## Getting help
 
-If you need a product with ongoing support, please look elsewhere.
+The handbook is the first place to look. It covers installation,
+usage, every rule, and every change.
 
 ## FAQ
 
@@ -363,8 +388,10 @@ A: Yes. JSON and SARIF outputs are pure on stdout. Exit codes are
    stable.
 
 **Q: Does it phone home?**
-A: No. Zero network calls. You can verify by reading the source
-   or by running it under strace.
+A: No tracking, no telemetry, no analytics. The Free tier makes
+   zero network calls. Pro activation makes exactly one call to
+   Getly on first use, then runs offline. You can verify both by
+   reading the source or by running it under strace.
 
 **Q: Does it fix my code?**
 A: No. It shows a typical before/after fix. You apply it yourself.

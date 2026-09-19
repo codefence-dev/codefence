@@ -86,9 +86,12 @@ Refund terms are documented in `REFUND_POLICY.md`. In summary:
 
 The Software:
 
-- makes **zero network calls**,
+- makes **zero network calls during scans**,
 - collects **zero telemetry**,
 - uploads **zero data**.
+- The only network call the Software makes is a one-time Pro license
+  validation against Getly, plus a silent refresh every 30 days if a
+  network is available. A missing network never disables Pro.
 
 All processing happens locally on your device. See `SECURITY.md` for
 the full threat model.

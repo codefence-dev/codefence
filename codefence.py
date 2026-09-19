@@ -43,7 +43,7 @@ from typing import Callable, Iterable, Iterator, Sequence
 # =============================================================================
 
 TOOL_NAME = "codefence"
-TOOL_VERSION = "1.0.13"
+TOOL_VERSION = "1.0.14"
 RULES_SCHEMA = "codefence/rules-v1"
 DEFAULT_MAX_SIZE = 2 * 1024 * 1024
 DEFAULT_RULES_FILENAME = "rules.json"
@@ -2821,7 +2821,7 @@ def report_html(findings: Sequence[Finding],
         f"{body}\n"
         "<footer>\n"
         f"{esc(TOOL_NAME)} v{esc(TOOL_VERSION)} &middot; "
-        "offline &middot; zero network calls &middot; "
+        "offline &middot; zero telemetry &middot; "
         "pattern-based sanity check, not a security audit\n"
         "</footer>\n"
         "</div>\n"
@@ -2851,6 +2851,7 @@ GETLY_VALIDATE_URL = "https://www.getly.store/api/v1/licenses/validate"
 GETLY_KEY_PREFIX = "GETLY-"
 GETLY_CACHE_FILE = "getly.json"
 GETLY_HTTP_TIMEOUT_SECONDS = 8
+GETLY_CACHE_TTL_DAYS = 30
 
 DEFAULT_CONFIG_CONTENT = {
     "schema": "codefence/config-v1",
@@ -4119,6 +4120,21 @@ def _call_getly_validate(key: str) -> bool | None:
     return bool(data.get("valid"))
 
 
+def _getly_cache_age_days(cache: dict) -> float | None:
+    """Return the age of the cache in days, or None if unparseable."""
+    validated_at_str = cache.get("validatedAt")
+    if not isinstance(validated_at_str, str):
+        return None
+    try:
+        validated_at = datetime.fromisoformat(validated_at_str)
+    except (ValueError, TypeError):
+        return None
+    if validated_at.tzinfo is None:
+        validated_at = validated_at.replace(tzinfo=timezone.utc)
+    delta = datetime.now(timezone.utc) - validated_at
+    return delta.total_seconds() / 86400.0
+
+
 def _validate_getly_license(key: str) -> bool:
     """Validate a Getly license key.
 
@@ -4138,7 +4154,11 @@ def _validate_getly_license(key: str) -> bool:
     cache_matches = bool(cache and cache.get("key") == key)
 
     if cache_matches:
-        # License is already proven; try a silent refresh, ignore failures.
+        # A fresh cache means fully offline: no network call at all.
+        age_days = _getly_cache_age_days(cache)
+        if age_days is not None and age_days < GETLY_CACHE_TTL_DAYS:
+            return True
+        # Stale cache: attempt one refresh. Network failures are ignored.
         result = _call_getly_validate(key)
         if result is True:
             _write_getly_cache(key, {"status": "active"})
@@ -4212,6 +4232,41 @@ def _pro_required_message(feature: str) -> str:
     )
 
 
+def _version_info() -> str:
+    """Return version line, followed by license status.
+
+    Reads only local state. No network call. Safe to run any time.
+    """
+    lines = [f"{TOOL_NAME} {TOOL_VERSION}"]
+    key = _read_license_key()
+    if not key:
+        lines.append("License: Free (no key found)")
+        return "\n".join(lines)
+    if key.startswith(GETLY_KEY_PREFIX):
+        cache = _read_getly_cache()
+        if cache and cache.get("key") == key:
+            lines.append("License: Pro (Getly)")
+            return "\n".join(lines)
+        lines.append("License: Free (key present, not yet validated)")
+        return "\n".join(lines)
+    if _validate_license(key):
+        lines.append("License: Pro (legacy HMAC)")
+        return "\n".join(lines)
+    lines.append("License: Free (invalid key)")
+    return "\n".join(lines)
+
+
+class _VersionAction(argparse.Action):
+    """Custom --version action that also reports license status."""
+
+    def __init__(self, option_strings, dest, **kwargs):
+        super().__init__(option_strings, dest, nargs=0, **kwargs)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(_version_info())
+        parser.exit()
+
+
 def _build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog=TOOL_NAME,
@@ -4259,8 +4314,7 @@ def _build_argparser() -> argparse.ArgumentParser:
                    help="Show code snippets and typical fix examples.")
     p.add_argument("-q", "--quiet", action="store_true",
                    help="Only print summary.")
-    p.add_argument("--version", action="version",
-                   version=f"{TOOL_NAME} {TOOL_VERSION}")
+    p.add_argument("--version", action=_VersionAction)
     p.add_argument("--severity", dest="severity_cli", default=None,
                    choices=["critical", "high", "medium", "low", "info"])
     return p
@@ -4398,7 +4452,7 @@ def _print_help() -> None:
     blocks.append(
         "    weak cryptography, unsafe config) before you commit.")
     blocks.append(
-        "    Fully offline. Zero network calls. Zero telemetry.")
+        "    Free tier runs fully offline. Zero telemetry at any tier.")
     blocks.append("")
     blocks.append(h("OUTPUT FORMATS"))
     blocks.append("    cli     Colored terminal report (default)")

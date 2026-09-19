@@ -44,7 +44,7 @@ Pro tier ($19 one-time) adds:
 1. After purchase you receive a unique license key of the form `GETLY-XXXX-XXXX-XXXX-XXXX`.
 2. The first time you use a Pro feature, CodeFence validates the key once against Getly's public endpoint.
 3. The result is cached locally at `~/.codefence/getly.json`.
-4. After that first validation, CodeFence runs fully offline. The license is permanent.
+4. After that first validation, CodeFence runs fully offline. A silent refresh is attempted every 30 days if a network is available, but a missing network never disables Pro. The license is permanent.
 5. No account, no email, no tracking, no device fingerprint.
 
 ## What CodeFence is NOT

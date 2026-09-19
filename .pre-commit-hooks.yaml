@@ -1,0 +1,7 @@
+- id: codefence
+  name: CodeFence
+  description: Scan AI-written Python and JavaScript for dangerous patterns before commit.
+  entry: codefence
+  language: python
+  files: \.(py|js|mjs|cjs)$
+  pass_filenames: true

@@ -10,8 +10,11 @@ For the full legal terms, see LICENSE.txt and TERMS_OF_USE.md.
 ## Can I read the source code?
 
 Yes. The tool ships as a single readable Python file. You can open it,
-inspect every line, and verify that it performs no network calls,
-collects no telemetry, and writes only to the documented locations.
+inspect every line, and verify that it performs no network calls during
+scans, collects no telemetry, and writes only to the documented
+locations. The only exception is a one-time Pro license validation
+against Getly, plus a silent refresh every 30 days if a network is
+available. A missing network never disables Pro.
 
 ## Can I modify the source?
 

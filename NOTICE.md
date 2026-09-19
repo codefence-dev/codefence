@@ -9,9 +9,11 @@ is a deliberate design decision, not an accident.
    trusted. You can read every line before running it.
 
 2. **Auditability.** You can verify that the tool:
-   - performs **zero network calls**,
+   - performs **zero network calls during scans**,
    - collects **zero telemetry**,
    - writes only to `--output` and (optionally) `~/.cache/codefence/`,
+   - performs one network call only for the first Pro license
+     validation (Getly), then a silent refresh every 30 days,
    - never executes the code it scans.
 
 3. **Portability.** The tool is a single Python file with zero
