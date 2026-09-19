@@ -64,6 +64,8 @@ Or run it directly:
 
     python3 codefence.py app.py
 
+The command is available as both `codefence` and `cfence`.
+
 ## Quick start
 
 **One-time setup in a git repository:**
@@ -293,10 +295,11 @@ Legacy `identifier:signature` keys are still accepted if you have one.
 
 Verify activation:
 
-    cfence init-hook    # works only with a valid Pro license
+    codefence init-hook    # works only with a valid Pro license
 
-The license is verified locally with HMAC-SHA256. No network call, no
-telemetry, no activation server.
+The first Getly validation requires a network call. Every subsequent
+run is fully offline. Legacy `identifier:signature` keys are verified
+locally with HMAC-SHA256 and require no network at all.
 
 ## Payment and pricing
 
@@ -341,11 +344,11 @@ protections in your country of residence remain fully applicable.
 
 ## Support
 
-There is no support.
+There is no email, no chat, and no guaranteed support.
 
-- No email. No chat. No issue tracker.
-- No guaranteed updates.
-- No bug-fix commitments.
+- Bug reports and feature requests may be opened as GitHub issues.
+- Issues may not receive a reply.
+- There is no release schedule and no bug-fix commitment.
 
 If you need a product with ongoing support, please look elsewhere.
 
@@ -385,7 +388,7 @@ A: Each developer using CodeFence on their own machine needs
    three devices.
 
 **Q: How do I get updates?**
-A: There are no guaranteed updates.
+A: Free for all v1.x releases, with no guaranteed schedule. See the Updates section.
 
 **Q: Can I get a refund?**
 A: See REFUND_POLICY.md.
